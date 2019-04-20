@@ -185,7 +185,7 @@ extern ty isr0, isr1, isr2, isr3, isr4, isr5, isr6, isr7, isr8, isr9,
   isr10, isr11, isr12, isr13, isr14, isr15, isr16, isr17, isr18, isr19,
   isr20, isr21, isr22, isr23, isr24, isr25, isr26, isr27, isr28, isr29,
   isr30, isr31, isr32, isr33, isr34, isr35, isr36, isr37, isr38, isr39,
-  isr40, isr41, isr42, isr43, isr44, isr45, isr46, isr47;
+  isr40, isr41, isr42, isr43, isr44, isr45, isr46, isr47, isr_syscall;
 
 #define NUM_HANDLERS 48
 #define MAX_HANDLERS_PER_INT 4
@@ -374,6 +374,8 @@ static int init_idt() {
   for (unsigned i = 0; i < NUM_HANDLERS; ++i)
     set_idt_entry(&entries[i], (uint32_t)_handlers[i], /*CS=*/0x08, /*DPL=*/0x00);
 
+  set_idt_entry(&entries[0x80], &isr_syscall, 0x08, 0x03);
+
   /** Then we inform the processor about the table in the same way we did for the GDT. { */
 
   idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
@@ -464,6 +466,10 @@ void interrupt_handler(x86_regs_t *regs) {
 
     debugger_except(regs, desc);
   }
+}
+
+void syscall_handler(x86_regs_t* regs) {
+	kprintf("SYSCALL!");
 }
 
 static prereq_t prereqs[] = { {"x86/gdt",NULL}, {NULL,NULL} };

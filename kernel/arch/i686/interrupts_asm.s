@@ -48,6 +48,38 @@ ISR_NOERRCODE i
 %endrep
 
 extern interrupt_handler
+extern syscall_handler
+
+global isr_syscall
+isr_syscall:
+	push byte 0
+	push byte 0x80
+	pusha
+
+        mov ax, ds              ; We can't push '%ds' directly, need to spill
+        push eax                ; to a temporary.
+
+        mov ax, 0x10            ; 0x10 is the kernel data selector.
+        mov ds, ax
+        mov es, ax
+        mov fs, ax
+        mov gs, ax
+
+        push esp                ; Push pointer to the stack as x86_regs_t* arg.
+        call syscall_handler
+        add esp, 4              ; Clean up x86_regs_t* argument from stack.
+      
+        pop eax
+        mov ds, ax
+        mov es, ax
+        mov fs, ax
+        mov gs, ax
+
+        popa
+        add esp, 8
+
+        iret
+
 
 ;;; The common interrupt handler does several things.
 ;;; 

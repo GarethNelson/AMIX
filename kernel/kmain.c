@@ -15,9 +15,7 @@ void user_enter() {
 extern char* default_usercode;
 extern char* default_usercode_end;
 
-int syscall_handler(struct regs *r, void *p) {
-    debugger_except(r,"syscall triggered!");
-}
+
 
 void init_task_enter(void* p) {
      kprintf("init0: Running...\n");
