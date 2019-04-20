@@ -198,7 +198,6 @@ void thread_kill(thread_t *t) {
 }
 
 int pit_handler(struct regs *r, void* p) {
-    kprintf("!");
     	thread_yield();
     return 0;
 }
@@ -233,9 +232,9 @@ static int threading_init() {
 
   register_debugger_handler("threads", "List all thread states", &inspect_threads);
 
-/*  register_interrupt_handler(IRQ(0), &pit_handler, (void*)0xdeadbeef);
+  register_interrupt_handler(IRQ(0), &pit_handler, (void*)0xdeadbeef);
 
-    __asm volatile("sti");*/
+    __asm volatile("sti");
 
   return 0;
 }

@@ -202,10 +202,12 @@ void set_gdt_entry(gdt_entry_t *e, uint32_t base, uint32_t limit,
 
 /** Similarly for a TSS entry, but we know we don't care about most of the fields in the TSS, and all of the segment registers we know statically; the data segments should point to our kernel data descriptor (0x10 - index 2 into the GDT) and CS should point to the kernel code descriptor (0x08 - index 1 into the GDT) {*/
 
+extern void* new_stack;
 static void set_tss_entry(tss_entry_t *e) {
   memset((uint8_t*)e, 0, sizeof(tss_entry_t));
   e->ss0 = e->ss = e->ds = e->es = e->fs = e->gs = 0x10;
   e->cs = 0x08;
+  e->esp0 = &new_stack;
 }
 
 /** The 'type' field is actually a bitmask, with the 3rd bit representing if this is a code or data segment ('1' = code segment). The other three bits depend on the code/data type. 
@@ -267,9 +269,10 @@ static int init_gdt() {
                  "mov  %%ax, %%es;"
                  "mov  %%ax, %%fs;"
                  "mov  %%ax, %%gs;"
-                 "ljmp $0x08, $1f;"
+		 "ljmp $0x08, $1f;"
                  "1:" : : "m" (gdt_ptr) : "eax");
 
+  print_gdt(NULL,NULL,0); print_tss(NULL,NULL,0);
   return 0;
 }
 

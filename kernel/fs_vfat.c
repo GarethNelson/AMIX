@@ -10,11 +10,7 @@
 #include "vfs.h"
 #include "vmspace.h"
 
-#ifdef DEBUG_vfat
-# define dbg(args...) kprintf("vfat: " args)
-#else
-# define dbg(args...)
-#endif
+#define dbg(args...) kprintf("vfat: " args)
 
 #define AREA_RESERVED 0
 #define AREA_FAT      1

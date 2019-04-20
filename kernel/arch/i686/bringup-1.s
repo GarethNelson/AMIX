@@ -238,3 +238,9 @@ global stack_base
 stack_base:
         resb    0x2000
 stack:
+
+align 8192
+global new_stack
+new_stack_base:
+	resb 0x2000
+new_stack:
