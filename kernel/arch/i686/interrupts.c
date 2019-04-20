@@ -469,7 +469,9 @@ void interrupt_handler(x86_regs_t *regs) {
 }
 
 void syscall_handler(x86_regs_t* regs) {
-	kprintf("SYSCALL!");
+	char buf[512];
+	ksnprintf(buf,512,"SYSCALL number %x invoked\n", regs->eax);
+   	debugger_except(regs, buf);
 }
 
 static prereq_t prereqs[] = { {"x86/gdt",NULL}, {NULL,NULL} };
