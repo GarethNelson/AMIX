@@ -228,6 +228,8 @@ static int threading_init() {
   thread_t *t = (thread_t*)slab_cache_alloc(&thread_cache);
   t->stack = (uintptr_t)__builtin_frame_address(0) & ~(THREAD_STACK_SZ-1);
 
+  t->vspace = get_current_address_space();
+
   *tls_slot(TLS_SLOT_TCB, t->stack) = (uintptr_t)t;
   *tls_slot(TLS_SLOT_CANARY, t->stack) = CANARY_VAL;
 

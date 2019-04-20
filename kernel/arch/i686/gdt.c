@@ -229,6 +229,7 @@ static void set_tss_entry(tss_entry_t *e) {
 /* Applies to both; set by the CPU. */
 #define TY_ACCESSED 1
 
+void flush_tss();
 
 /** Finally we get to initialise the GDT. We create our 5 code/data descriptors and NumCores TSS descriptors. {*/
 static int init_gdt() {
@@ -272,6 +273,7 @@ static int init_gdt() {
 		 "ljmp $0x08, $1f;"
                  "1:" : : "m" (gdt_ptr) : "eax");
 
+  flush_tss();
   print_gdt(NULL,NULL,0); print_tss(NULL,NULL,0);
   return 0;
 }
