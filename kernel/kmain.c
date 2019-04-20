@@ -35,6 +35,5 @@ void kmain(int argc, char** argv) {
 
 
     thread_t* init_task = thread_spawn(&init_task_enter,NULL,1);
-//    init_task_enter(NULL);
     for(;;);
 }

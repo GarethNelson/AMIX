@@ -276,6 +276,10 @@ static int init_gdt() {
   return 0;
 }
 
+void set_kernel_stack(uintptr_t stack) {
+	tss_entries[0].esp0 = stack;
+}
+
 static prereq_t prereqs[] = { {"console",NULL}, {"debugger",NULL}, {NULL,NULL} };
 static module_t x run_on_startup = {
   .name = "x86/gdt",

@@ -65,6 +65,7 @@ static void free_stack_and_tls(uintptr_t stack) {
     unmap(stack+i, 1);
   }
 }
+void set_kernel_stack(uintptr_t stack);
 
 static void yield() {
   thread_t *t = scheduler_next();
@@ -77,6 +78,7 @@ static void yield() {
     return;
   }
   t->state = THREAD_RUN;
+  set_kernel_stack(t->kernel_stack);
   longjmp(t->jmpbuf, 1);
 }
 
@@ -116,7 +118,9 @@ thread_t *thread_spawn(void (*fn)(void*), void *p, uint8_t auto_free) {
 
   t->auto_free = auto_free;
   t->stack = alloc_stack_and_tls();
- 
+
+  t->kernel_stack = alloc_stack_and_tls();
+
   spinlock_acquire(&thread_list_lock);
   t->next = thread_list_head;
   t->next->prev = t;

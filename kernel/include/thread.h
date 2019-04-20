@@ -39,6 +39,9 @@ typedef struct thread {
   /* Stack base (lowest address in memory) */
   uintptr_t stack;
 
+  /* kernel stack */
+  uintptr_t kernel_stack;
+
   /* Atomically increment to force this thread to stop when next preempted. */
   uintptr_t request_kill;
 
