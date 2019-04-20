@@ -45,10 +45,7 @@ void init_task_enter(char* str) {
 
 void kmain(int argc, char** argv) {
     kprintf("kmain() - Starting main OS...\n");
-    thread_t* init_task1 = thread_spawn(&init_task_enter,"A",1);
-    thread_t* init_task2 = thread_spawn(&init_task_enter,"B",1);
-    thread_t* init_task3 = thread_spawn(&init_task_enter,"C",1);
-    thread_t* init_task4 = thread_spawn(&init_task_enter,"D",1);
-    for(int i=0; i<64; i++) thread_spawn(&init_task_enter,"T",1);
+    thread_t* init_task = thread_spawn(&init_task_enter,"A",1);
+
     for(;;) thread_yield();
 }
