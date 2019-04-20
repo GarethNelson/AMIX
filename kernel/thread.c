@@ -79,6 +79,7 @@ static void yield() {
   }
   t->state = THREAD_RUN;
   set_kernel_stack(t->kernel_stack);
+  switch_address_space(t->vspace);
   longjmp(t->jmpbuf, 1);
 }
 
@@ -120,6 +121,8 @@ thread_t *thread_spawn(void (*fn)(void*), void *p, uint8_t auto_free) {
   t->stack = alloc_stack_and_tls();
 
   t->kernel_stack = alloc_stack_and_tls();
+
+  t->vspace = get_current_address_space();
 
   spinlock_acquire(&thread_list_lock);
   t->next = thread_list_head;

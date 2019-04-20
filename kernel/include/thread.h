@@ -42,6 +42,9 @@ typedef struct thread {
   /* kernel stack */
   uintptr_t kernel_stack;
 
+  /* address space */
+  address_space_t* vspace;
+
   /* Atomically increment to force this thread to stop when next preempted. */
   uintptr_t request_kill;
 

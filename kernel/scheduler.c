@@ -1,3 +1,4 @@
+#include "hal.h"
 #include "scheduler.h"
 #include "assert.h"
 
@@ -31,7 +32,8 @@ thread_t *scheduler_next() {
 }
 
 static int scheduler_init() {
-  return 0;
+	init_virtual_memory();
+      	return 0;
 }
 
 static prereq_t p[] = { {"x86/screen",NULL}, {NULL,NULL} };

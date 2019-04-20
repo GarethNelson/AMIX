@@ -151,14 +151,16 @@ static int to_x86_flags(int flags) {
 }
 
 address_space_t *get_current_address_space() {
-  return current;
+	if(current==NULL) init_virtual_memory();
+      	return current;
 }
 
 /**
    Now we can write the code to inform the CPU about a page directory. To do this, we write the (**physical**) address of the directory to the ``%cr3`` register, along with the access flags PRESENT and WRITEable. { */
 
 int switch_address_space(address_space_t *dest) {
-  write_cr3((uintptr_t)dest->directory | X86_PRESENT | X86_WRITE);
+	if(dest==NULL) return;
+	write_cr3((uintptr_t)dest->directory | X86_PRESENT | X86_WRITE);
   return 0;
 }
 

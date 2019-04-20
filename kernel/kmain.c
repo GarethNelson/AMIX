@@ -34,7 +34,6 @@ void init_task_enter(void* p) {
 
 void kmain(int argc, char** argv) {
     kprintf("kmain() - Starting main OS...\n");
-
     thread_t* init_task = thread_spawn(&init_task_enter,NULL,1);
     for(;;);
 }
