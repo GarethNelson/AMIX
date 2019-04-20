@@ -33,5 +33,6 @@ start:
      push a ;may need to remove the _ for this to work right 
      iret
      a:
+	int 0x80
 	jmp a
 
