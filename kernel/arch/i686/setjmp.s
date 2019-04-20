@@ -17,7 +17,12 @@ longjmp:
         mov     ebx, [ecx+12]
         mov     esi, [ecx+16]
         mov     edi, [ecx+20]
-        
+       
+	push eax
+	mov eax, [ecx+28]
+	mov cr3, eax
+	pop eax
+ 
         mov     edx, [ecx+24]
         push    edx
         popf
@@ -42,6 +47,9 @@ setjmp:
         mov     [ecx+12], ebx
         mov     [ecx+16], esi
         mov     [ecx+20], edi
+
+	mov eax,	cr3
+	mov	[ecx+28], eax
 
         pushf                   ; EFLAGS
         pop     eax

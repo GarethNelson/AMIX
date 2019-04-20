@@ -24,6 +24,7 @@ void init_task_enter(char* str) {
      memset(new_space,0,sizeof(address_space_t));
 
      clone_address_space(new_space,0);
+     kprintf("Setting up new vspace at %p\n",new_space->directory);
      thread_current()->vspace = new_space;
      switch_address_space(new_space);
      
@@ -48,6 +49,6 @@ void kmain(int argc, char** argv) {
     thread_t* init_task2 = thread_spawn(&init_task_enter,"B",1);
     thread_t* init_task3 = thread_spawn(&init_task_enter,"C",1);
     thread_t* init_task4 = thread_spawn(&init_task_enter,"D",1);
-    for(int i=0; i<32; i++) thread_spawn(&init_task_enter,"T",1);
+    for(int i=0; i<64; i++) thread_spawn(&init_task_enter,"T",1);
     for(;;) thread_yield();
 }

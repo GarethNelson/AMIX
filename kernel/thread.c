@@ -5,6 +5,7 @@
 #include "scheduler.h"
 #include "stdio.h"
 #include "string.h"
+#include "kmalloc.h"
 
 #include "x86/io.h"
 
@@ -53,6 +54,7 @@ static uintptr_t alloc_stack_and_tls() {
   for (unsigned i = 0; i < THREAD_STACK_SZ; i += pagesz)
     map(addr+i, alloc_page(PAGE_REQ_NONE), 1, PAGE_WRITE);
 
+
   return addr;
 }
 
@@ -78,8 +80,11 @@ static void yield() {
     return;
   }
   t->state = THREAD_RUN;
-  switch_address_space(t->vspace);
+  kprintf("Switching address space to %p and stack to %p\n",t->vspace->directory,t->kernel_stack);
+//  switch_address_space(t->vspace);
   set_kernel_stack(t->kernel_stack);
+
+  kprintf("About to longjmp to %p\n",t->jmpbuf);
 
   longjmp(t->jmpbuf, 1);
 }
@@ -205,8 +210,10 @@ void thread_kill(thread_t *t) {
   __sync_bool_compare_and_swap(&t->request_kill, 0, 1);
 }
 
+
 int pit_handler(struct regs *r, void* p) {
     if(r->eip <= 0xC0000000) thread_yield(); // only switch if we were in user mode
+    kprintf("About to return from pit_handler to %p\n",r->eip);
     return 0;
 }
 

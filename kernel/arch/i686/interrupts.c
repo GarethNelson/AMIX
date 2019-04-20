@@ -385,6 +385,7 @@ static int init_idt() {
     enable_irq = &pic_enable_irq;
   }
 
+
   return 0;
 }
 
@@ -438,7 +439,6 @@ int unregister_interrupt_handler(int num, interrupt_handler_t handler, void *p) 
 void interrupt_handler(x86_regs_t *regs) {
   unsigned num = regs->interrupt_num;
 
-  /** The first thing we do is ensure any IRQ is ACK'd. { */
   ack_irq(num);
 
   /** Then we search for registered interrupt handlers and call them all. { */
@@ -461,6 +461,7 @@ void interrupt_handler(x86_regs_t *regs) {
 
     debugger_except(regs, desc);
   }
+
 }
 
 void syscall_handler(x86_regs_t* regs) {

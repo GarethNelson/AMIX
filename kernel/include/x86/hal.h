@@ -40,7 +40,7 @@ static inline void abort() {
 #include "x86/regs.h"
 
 struct jmp_buf_impl {
-  uint32_t esp, ebp, eip, ebx, esi, edi, eflags;
+  uint32_t esp, ebp, eip, ebx, esi, edi, eflags, cr3;
 };
 
 typedef struct jmp_buf_impl jmp_buf[1];
