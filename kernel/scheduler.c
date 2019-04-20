@@ -1,4 +1,5 @@
 #include "hal.h"
+#include "stdio.h"
 #include "scheduler.h"
 #include "assert.h"
 

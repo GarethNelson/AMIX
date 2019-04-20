@@ -103,6 +103,7 @@
 #include "string.h"
 #include "x86/io.h"
 #include "x86/regs.h"
+#include "syscalls.h"
 
 #define NUM_TRAP_STRS 20
 static const char *trap_strs[NUM_TRAP_STRS] = {
@@ -469,9 +470,16 @@ void interrupt_handler(x86_regs_t *regs) {
 }
 
 void syscall_handler(x86_regs_t* regs) {
-	char buf[512];
-	ksnprintf(buf,512,"SYSCALL number %x invoked\n", regs->eax);
-   	debugger_except(regs, buf);
+	uint32_t syscall_no = regs->eax;
+	uint32_t* userstack = regs->useresp;
+
+        if(syscall_no >0 && syscall_no < (sizeof(syscalls_table)/sizeof(void*)) && syscalls_table[syscall_no]) {
+		regs->eax = syscalls_table[syscall_no](userstack[0],userstack[1],userstack[2],userstack[3]);
+	} else {
+		char buf[512];
+		ksnprintf(buf,512,"unknown syscall number %x invoked\n", regs->eax);
+	   	debugger_except(regs, buf);
+	}
 }
 
 static prereq_t prereqs[] = { {"x86/gdt",NULL}, {NULL,NULL} };

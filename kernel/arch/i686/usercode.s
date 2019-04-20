@@ -29,7 +29,65 @@ start:
      push a ;may need to remove the _ for this to work right 
      iret
      a:
-	mov eax,0x666
-	;int 0x80
-	jmp a
+	mov esi, greeter_string
+	call print_string
+
+	; here is where we start doing shit
+	; first, test a simple syscall via int 0x80
+
+	mov esi, test_dbg_out_num_string
+	call print_string
+
+	push 0xDEADBEEF
+	mov eax, sys_debug_out_num
+	int 0x80
+	pop ecx
+
+	call nl
+
+	mov eax,sys_get_tid
+	int 0x80
+	mov ebx,eax
+
+	mov esi,test_tid_string
+	call print_string
+
+	push ebx
+	mov eax, sys_debug_out_num
+	int 0x80
+	pop ecx
+
+	call nl
+
+
+endless_loop:
+ 	jmp endless_loop
+
+print_string:
+	.run:
+	lodsb
+	cmp al,0
+	je .done
+	push eax
+	mov eax, sys_debug_out
+	int 0x80
+	pop ecx
+	jmp .run
+	.done:
+	ret
+
+nl:
+	push 10 
+	mov eax, sys_debug_out
+	int 0x80
+	pop ecx
+	ret
+
+greeter_string:          db 10,'[USERCODE]',9, 'Hello from default usercode',10,0
+test_dbg_out_num_string: db    '[USERCODE]',9, 'Dumping a number, this should say 0xdeadbeef: ',0
+test_tid_string:         db    '[USERCODE]',9, 'My TID is ',0
+
+%define X(syscall_num,syscall_name) sys_ %+ syscall_name equ syscall_num
+	%[%include "syscalls.def"]
+%undef X
 

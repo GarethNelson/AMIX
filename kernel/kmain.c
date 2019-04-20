@@ -44,7 +44,7 @@ void init_task_enter(char* str) {
 void kmain(int argc, char** argv) {
     kprintf("kmain() - Starting main OS...\n");
 //    init_task_enter("testing");
-    thread_t* init_task1 = thread_spawn(&init_task_enter,(void*)"Thread 1",1);
-    thread_t* init_task2 = thread_spawn(&init_task_enter,"Thread 2",1);
+    thread_t* init_task1 = thread_spawn(&init_task_enter,(void*)"A",1);
+    thread_t* init_task2 = thread_spawn(&init_task_enter,"B",1);
     for(;;);
 }
