@@ -26,11 +26,7 @@
 #include "string.h"
 #include "vmspace.h"
 
-#ifdef DEBUG_part
-# define dbg(args...) kprintf("part: " args)
-#else
-# define dbg(args...)
-#endif
+#define dbg(args...) kprintf("part: " args)
 
 struct partdesc;
 static void register_partition(dev_t dev, block_device_t *bdev,
@@ -142,7 +138,7 @@ static bool read_boot_sector(block_device_t *bdev, uint64_t address,
     ret = false;
   } else if (sector[510] != PARTITION_MAGIC1 || sector[511] != PARTITION_MAGIC2) {
     dbg("extended partition magic number incorrect!\n");
-    ret = false;
+//    ret = false;
   } else {
     memcpy((uint8_t*) partitions, &sector[PARTITION_ENTRY_START], sizeof(partdesc_t) * 4);
   }
@@ -210,12 +206,12 @@ static bool detect_partitions(dev_t dev) {
     return false;
 
   for (int i = 0; i < 4; ++i) {
-    if (PARTITION_IS_EXTENDED(partitions[i])) {
+/*    if (PARTITION_IS_EXTENDED(partitions[i])) {
       if (!extended_partition(dev, partitions[i].lba))
         return false;
-    }
+    }*/
 
-    else if (!PARTITION_IS_NULL(partitions[i]))
+    /*else*/ if (!PARTITION_IS_NULL(partitions[i]))
       register_partition(dev, bdev, &partitions[i], i);
   }
 

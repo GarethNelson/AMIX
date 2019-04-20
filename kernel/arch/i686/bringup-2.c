@@ -50,7 +50,7 @@ static uintptr_t earlyalloc(unsigned len) {
    in 'n' different strings. This is used to convert the kernel command line
    into a form suitable for passing to main(). */
 static int tokenize(char tok, char *in, char **out, int maxout) {
-  int n = 0;
+  int n = 1;
   
   while(*in && n < maxout) {
     out[n++] = in;

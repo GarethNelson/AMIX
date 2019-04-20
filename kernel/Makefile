@@ -56,7 +56,8 @@ KERNEL_OBJS=\
 	string.o\
 	thread.o\
 	vfs.o\
-	vmspace.o
+	vmspace.o\
+	kmain.o
 
 
 .c.o:

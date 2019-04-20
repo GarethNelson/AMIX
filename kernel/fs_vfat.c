@@ -867,7 +867,7 @@ static int vfat_init() {
   return 0;
 }
 
-static prereq_t req[] = { {"vfs",NULL}, {"kmalloc",NULL}, {NULL,NULL} };
+static prereq_t req[] = { {"vfs",NULL}, {"kmalloc",NULL}, {"partition",NULL}, {NULL,NULL} };
 static module_t x run_on_startup = {
   .name = "fs_vfat",
   .required = req,
