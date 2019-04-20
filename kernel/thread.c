@@ -80,11 +80,8 @@ static void yield() {
     return;
   }
   t->state = THREAD_RUN;
-  kprintf("Switching address space to %p and stack to %p\n",t->vspace->directory,t->kernel_stack);
-//  switch_address_space(t->vspace);
   set_kernel_stack(t->kernel_stack);
 
-  kprintf("About to longjmp to %p\n",t->jmpbuf);
 
   longjmp(t->jmpbuf, 1);
 }
@@ -212,8 +209,7 @@ void thread_kill(thread_t *t) {
 
 
 int pit_handler(struct regs *r, void* p) {
-    if(r->eip <= 0xC0000000) thread_yield(); // only switch if we were in user mode
-    kprintf("About to return from pit_handler to %p\n",r->eip);
+    if(r->eip <= 0xC0000000) thread_yield();
     return 0;
 }
 

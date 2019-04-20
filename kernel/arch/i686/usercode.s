@@ -29,7 +29,6 @@ start:
      push a ;may need to remove the _ for this to work right 
      iret
      a:
-	jmp a
 	mov esi, greeter_string
 	call print_string
 

@@ -25,13 +25,13 @@ void init_task_enter(char* str) {
 
      clone_address_space(new_space,0);
      kprintf("Setting up new vspace at %p\n",new_space->directory);
-     thread_current()->vspace = new_space;
+
      switch_address_space(new_space);
      
      map(0x80002000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
      map(0x80000000,alloc_pages(PAGE_REQ_NONE,1),1,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
 
-     thread_current()->vspace = new_space;
+
      switch_address_space(new_space);
 
      uint32_t usercode_len = (uint32_t)default_usercode_end - (uint32_t)default_usercode;
