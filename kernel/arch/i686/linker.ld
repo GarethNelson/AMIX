@@ -92,7 +92,6 @@ SECTIONS
   }
 
   /* Get rid of all other sections. */
-  /DISCARD/ : { *(.*) }
 
 }
 
