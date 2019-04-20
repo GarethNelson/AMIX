@@ -78,8 +78,9 @@ static void yield() {
     return;
   }
   t->state = THREAD_RUN;
-  set_kernel_stack(t->kernel_stack);
   switch_address_space(t->vspace);
+  set_kernel_stack(t->kernel_stack);
+
   longjmp(t->jmpbuf, 1);
 }
 
@@ -205,7 +206,7 @@ void thread_kill(thread_t *t) {
 }
 
 int pit_handler(struct regs *r, void* p) {
-    	thread_yield();
+    if(r->eip <= 0xC0000000) thread_yield(); // only switch if we were in user mode
     return 0;
 }
 

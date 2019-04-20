@@ -160,17 +160,15 @@ static const char *trap_strs[NUM_TRAP_STRS] = {
    *P*
      Segment present. Always 1, for any segment we define. { */
 
-typedef struct idt_entry {
-  uint16_t base_low;
-  uint16_t sel;
-  uint8_t zero1;
-  uint8_t one_one_zero : 3;
-  uint8_t d : 1;
-  uint8_t zero2 : 1;
-  uint8_t dpl : 2;
-  uint8_t p : 1;
-  uint16_t base_high;
-} idt_entry_t;
+struct idt_entry_struct
+{
+   uint16_t base_lo;             // The lower 16 bits of the address to jump to when this interrupt fires.
+   uint16_t sel;                 // Kernel segment selector.
+   uint8_t  always0;             // This must always be zero.
+   uint8_t  flags;               // More flags. See documentation.
+   uint16_t base_hi;             // The upper 16 bits of the address to jump to.
+} __attribute__((packed));
+typedef struct idt_entry_struct idt_entry_t;
 
 /** Similarly to the GDT, the IDT has a structure that is given to the processor. It contains the start and size of the descriptor table. { */
 
@@ -215,7 +213,7 @@ unsigned num_handlers[NUM_HANDLERS];
 /** These functions are purely for aiding debugging. The ``print_idt`` and ``print_handlers`` functions are designed to be called from an optional kernel debugger module. { */
 
 static void print_idt_entry(unsigned i, idt_entry_t e) {
-  kprintf("#%02d: Base %#08x Sel %#04x\n", i, e.base_low | (e.base_high<<16), e.sel);
+  kprintf("#%02d: Base %#08x Sel %#04x\n", i, e.base_lo | (e.base_hi<<16), e.sel);
 }
 
 static void print_idt(const char *cmd, core_debug_state_t *states, int core) {
@@ -251,16 +249,12 @@ static void print_handlers(const char *cmd, core_debug_state_t *states, int core
 /** Here we set up an IDT descriptor. I hope this should all be self-explanatory... { */
 
 static void set_idt_entry(idt_entry_t *e, uint32_t base, uint16_t sel, uint8_t dpl) {
-  e->base_low = base & 0xFFFF;
-  e->sel = sel;
-  e->zero1 = 0;
-  e->p = 1;
-  e->dpl = dpl;
-  e->zero2 = 0;
-  e->d = 1;
-  e->one_one_zero = 6; /* 0b110 = 6 */
-  e->base_high = (base >> 16) & 0xFFFF;
-}
+	e->base_lo = base & 0xFFFF;
+	e->base_hi = (base >> 16) & 0xFFFF;
+	e->sel     = sel;
+	e->always0 = 0;
+	e->flags   = dpl|0x60;
+     }
 
 /** 
     Interrupt requests (IRQs)
@@ -373,9 +367,9 @@ static int init_idt() {
 
   memset((uint8_t*)entries, 0, sizeof(idt_entry_t)*256);
   for (unsigned i = 0; i < NUM_HANDLERS; ++i)
-    set_idt_entry(&entries[i], (uint32_t)_handlers[i], /*CS=*/0x08, /*DPL=*/0x00);
+    set_idt_entry(&entries[i], (uint32_t)_handlers[i], /*CS=*/0x08, /*DPL=*/0x8E);
 
-  set_idt_entry(&entries[0x80], &isr_syscall, 0x08, 0x03);
+  set_idt_entry(&entries[0x80], &isr_syscall, 0x08, 0x8E);
 
   /** Then we inform the processor about the table in the same way we did for the GDT. { */
 
