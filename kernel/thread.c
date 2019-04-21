@@ -134,7 +134,8 @@ thread_t *thread_spawn(void (*fn)(void*), void *p, uint8_t auto_free) {
   t->kernel_stack = alloc_stack_and_tls();
 
   t->vspace = get_current_address_space();
-
+  t->ringbuf_backing = kmalloc(4096);
+  t->ringbuf = make_char_ringbuf(t->ringbuf_backing,4096);
   spinlock_acquire(&thread_list_lock);
   t->next = thread_list_head;
   t->next->prev = t;

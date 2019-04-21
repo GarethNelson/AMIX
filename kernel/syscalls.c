@@ -20,6 +20,19 @@ uint32_t sys_get_tid() {
     return tid;
 }
 
+uint32_t sys_write_ringbuf(uint32_t dest_tid, char *s, uint32_t size) {
+	thread_t* dest = (thread_t*)dest_tid;
+	char_ringbuf_write(&dest->ringbuf, s, size);
+	return 0;
+}
+
+uint32_t sys_read_ringbuf() {
+	char c;
+	int retval = char_ringbuf_read(&thread_current()->ringbuf,&c,1);
+	if(retval==0) return 0;
+	return (uint32_t)c;
+}
+
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
 #define X(num,name,params) [num] &sys_##name,
         #include "syscalls.def"

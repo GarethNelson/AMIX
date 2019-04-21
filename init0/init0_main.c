@@ -18,8 +18,13 @@ void init0_main() {
 
 	uint32_t fork_ret = sys_fork();
 	if(fork_ret==0) {
-		print_str("CHILD!\n");
+//		print_str("CHILD!\n");
+		for(;;) {
+			sys_debug_out(sys_read_ringbuf());
+		}
 	} else {
-		print_str("PARENT!\n");
+		char* test_str="This is a message sent from parent to child\n";
+		sys_write_ringbuf(fork_ret,test_str,__builtin_strlen(test_str));
+		print_str("This is the parent talking using normal sys_debug_out\n");
 	}
 }

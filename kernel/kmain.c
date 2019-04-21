@@ -109,8 +109,12 @@ void setup_modules() {
 
 }
 
+setup_vfs() {
+}
+
 void kmain(int argc, char** argv) {
      kprintf("kmain() - Starting main OS...\n");
+
      setup_modules();
 
      for(;;) thread_yield();

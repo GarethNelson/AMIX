@@ -6,8 +6,10 @@
 	int sys_debug_out(char c);
 	int sys_debug_out_num(uintptr_t n);
 	uint32_t sys_get_tid();
+	uint32_t sys_write_ringbuf(uint32_t dest_tid, char *s, uint32_t size);
+	uint32_t sys_read_ringbuf();
 
-	#define SYSCALL_COUNT 3
+#define SYSCALL_COUNT 5
 
 	enum syscall_numbers {
 	#define X(num,name,params) SYSCALL_##name=num,

@@ -1,3 +1,5 @@
 X(1,debug_out,(uint32_t c))
 X(2,debug_out_num,(uint32_t num))
 X(3,get_tid,())
+X(4,write_ringbuf,(uint32_t dest_tid,char *s,uint32_t size))
+X(5,read_ringbuf,())
