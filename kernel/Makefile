@@ -4,7 +4,7 @@ include ../make.conf
 ARCHDIR=arch/$(ARCH)
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -fno-omit-frame-pointer -DNDEBUG -std=c99
-CPPFLAGS:=$(CPPFLAGS) -Iinclude -DARCH=\"$(ARCH)\" -DTARGET=X86 -DX86
+CPPFLAGS:=$(CPPFLAGS) -Iinclude -DARCH=\"$(ARCH)\" -DTARGET=X86 -DX86 -DKERNEL
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -lgcc
 NASMFLAGS:=-felf

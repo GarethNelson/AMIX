@@ -1,9 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define X(syscall_num,syscall_name,params) __attribute__ ((naked)) uint32_t sys_ ## syscall_name params { __asm__ __volatile__ ("addl $8,%esp\n movl  $" #syscall_num ", %eax\n int $0x80\n subl $8, %esp"); }
-	#include <amix/syscalls.def>
-#undef X
+#include <AMIX/syscalls.h>
 
 void putchar(char c) {
 	sys_debug_out((uint32_t)c);
