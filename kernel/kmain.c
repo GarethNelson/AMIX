@@ -49,7 +49,9 @@ kprintf("init0: %s\n",mod->string);
      kprintf("Setting up new vspace at %p\n",new_space->directory);
 
      switch_address_space(new_space);
-     
+    
+     // TODO: data, bss, etc, and map instead of memcpy
+
      map(0x80020000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
      map(elf_ph_header->p_vaddr,alloc_pages(PAGE_REQ_NONE,(init0_len/4096)+2),(init0_len/4096)+2,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
 
