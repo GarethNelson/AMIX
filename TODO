@@ -1,4 +1,18 @@
-working fork
-simple IPC
-	queue data structure in kernel space
-	syscalls to get/put to queue
+expand ringbuf to deal with messages rather than just a character stream
+
+message passing system:
+	async only - blocks if trying to send to a process with a full message queue
+	3 syscalls:
+		send_msg(uint32_t dest_tid, uint32_t msg_tag, uint32_t msg_len, void* msg_body)
+			send a message to the specified destination thread
+			msg_body must be a valid userspace address and will be copied into the other process
+			if the remote process's message queue is full, this syscall will block
+			returns 0 on success
+
+		try_send_msg(uint32_t dest_tid, uint32_t msg_tag, uint32_t msg_len, void* msg_body)
+			like send_msg() but returns immediately if unable to send, rather than blocking
+
+		recv_msg(uint32_t *msg_tag, uint32_t *buf_len, uint32_t* msg_body_len, void* msg_body)
+			check for a message waiting in the queue, if one is there receive it into the specified buffer
+			if no message is waiting, returns 1
+			returns 0 on success
