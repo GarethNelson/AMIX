@@ -1,0 +1,4 @@
+working fork
+simple IPC
+	queue data structure in kernel space
+	syscalls to get/put to queue
