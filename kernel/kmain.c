@@ -62,7 +62,24 @@ kprintf("init0: %s\n",mod->string);
 
      void (*func_ptr)() = ((Elf32_Ehdr*)init0_img)->e_entry; // 0x80000000;
      kprintf("Jumping to entry...\n");
-     func_ptr();
+
+__asm__ volatile("  \ 
+     mov $0x23, %%ax; \ 
+     mov %%ax, %%ds; \ 
+     mov %%ax, %%es; \ 
+     mov %%ax, %%fs; \ 
+     mov %%ax, %%gs; \ 
+                   \ 
+     mov %%esp, %%eax; \ 
+     pushl $0x23; \ 
+     pushl %%eax; \ 
+     pushf; \ 
+     pushl $0x1B; \ 
+     push %0; \ 
+     iret; \ 
+     ": : "b"(func_ptr));
+
+//     func_ptr();
      for(;;);
 }
 
