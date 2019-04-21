@@ -80,8 +80,8 @@ install-kernel: kernel.bin
 	cp kernel.bin $(SYSROOT)/boot
 
 install-headers:
-	mkdir -p $(SYSROOT)/usr/include
-	cp -Rv include/* $(SYSROOT)/usr/include/
+	mkdir -p $(SYSROOT)/usr/include/AMIX
+	cp -Rv include/* $(SYSROOT)/usr/include/AMIX/
 
 clean:
 	rm -f kernel.bin
