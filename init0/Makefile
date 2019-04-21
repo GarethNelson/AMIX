@@ -47,6 +47,7 @@ install-init0: init0.elf init0.bin
 
 clean:
 	rm -f init0.elf
+	rm -f init0.bin
 	rm -f $(INIT0_OBJS)
 	rm -f $(INIT0_OBJS:.o=.d) *.d */*.d */*/*.d
 	rm -f init0.map

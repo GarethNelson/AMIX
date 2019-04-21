@@ -7,6 +7,7 @@ all: kernel init0
 clean: kernel
 	make -C kernel clean
 	make -C init0 clean
+	rm -rf sysroot/
 
 run-qemu: all
-	qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 4G -initrd sysroot/boot/init0.bin
+	qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 4G -initrd sysroot/boot/init0.elf

@@ -6,6 +6,7 @@
 #include "assert.h"
 #include "thread.h"
 #include "x86/multiboot.h"
+#include "elf.h"
 
 extern void jump_usermode();
 
@@ -16,10 +17,16 @@ void user_enter() {
 extern char* default_usercode;
 extern char* default_usercode_end;
 char* init0_img;
-
+size_t init0_len;
 
 void init_task_enter(char* str) {
      kprintf("init0: %s\n",str);
+
+	if(!elf_check_file(init0_img)) {
+		kprintf("Bad ELF file!\n");
+		for(;;);
+	}
+
 
      address_space_t *new_space = kmalloc(sizeof(address_space_t));
      memset(new_space,0,sizeof(address_space_t));
@@ -29,16 +36,16 @@ void init_task_enter(char* str) {
 
      switch_address_space(new_space);
      
-     map(0x80002000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
-     map(0x80000000,alloc_pages(PAGE_REQ_NONE,1),1,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
+     map(0x81000000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
+     map(0x80000000,alloc_pages(PAGE_REQ_NONE,init0_len/4096),init0_len/4096,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
 
 
      switch_address_space(new_space);
 
-     uint32_t usercode_len = (uint32_t)default_usercode_end - (uint32_t)default_usercode;
-     __builtin_memcpy(0x80000000,init0_img,4096); 
+     memcpy(0x80000000,init0_img,init0_len); 
 
-     void (*func_ptr)() = 0x80000000;
+     void (*func_ptr)() = ((Elf32_Ehdr*)init0_img)->e_entry; // 0x80000000;
+     kprintf("init0: entry at %p\n", func_ptr);
      func_ptr();
      for(;;);
 }
@@ -63,6 +70,7 @@ void setup_modules() {
                      (unsigned) mod->mod_end,
                      (char *) mod->string);
 		init0_img = mod->mod_start;
+		init0_len = mod->mod_end - mod->mod_start;
 	   }
 
   }

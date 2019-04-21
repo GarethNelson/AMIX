@@ -58,6 +58,7 @@ KERNEL_OBJS=\
 	vfs.o\
 	vmspace.o\
 	syscalls.o\
+	elf.o\
 	kmain.o
 
 
