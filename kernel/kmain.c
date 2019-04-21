@@ -92,9 +92,30 @@ void setup_modules() {
 
 }
 
+void test_clone2(char* c) {
+    address_space_t *new_space = kmalloc(sizeof(address_space_t));
+     memset(new_space,0,sizeof(address_space_t));
+
+     clone_address_space(new_space,1);
+     kprintf("Setting up new vspace at %p\n",new_space->directory);
+
+     switch_address_space(new_space);
+
+	for(;;)  { *c='!'; thread_yield(); }
+}
+
+void test_clone(void* p) {
+     map(0x80020000,alloc_pages(PAGE_REQ_NONE,1),1,PAGE_USER|PAGE_WRITE);
+	char* c=0x80020000;
+	*c = '.';
+	thread_spawn(&test_clone2,c,1);
+	for(;;) { kprintf("%c",*c); thread_yield(); }
+}
+
 void kmain(int argc, char** argv) {
      kprintf("kmain() - Starting main OS...\n");
-     setup_modules();
+	thread_spawn(&test_clone,"",1);
+     //     setup_modules();
 
 //    thread_t* init_task = thread_spawn(&init_task_enter,"A",1);
 
