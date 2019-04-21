@@ -1,4 +1,5 @@
 [GLOBAL _start]
+[GLOBAL putchar]
 [EXTERN init0_main]
 
 _start:
@@ -19,7 +20,6 @@ _start:
      iret
      a:
 
-
 	mov esi, greeter_string
 	call print_string
 
@@ -34,10 +34,12 @@ _start:
 	push eax
 	mov eax,sys_debug_out_num
 	int 0x80
+	pop eax
 
 	push 10
 	mov eax, sys_debug_out
 	int 0x80
+	pop eax
 
 	mov esi,my_tid_string
 	call print_string
@@ -47,10 +49,21 @@ _start:
 	push eax
 	mov eax, sys_debug_out_num
 	int 0x80
+	pop eax
 
-loop:	jmp loop
 	call init0_main
 
+loop:	jmp loop
+
+putchar:
+	push ebx
+	mov ebx,[esp+8]
+	push ebx
+	mov eax,sys_debug_out
+	int 0x80
+	pop ebx
+	pop ebx
+	ret
 
 print_string:
 	.run:
