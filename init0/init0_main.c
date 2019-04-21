@@ -11,6 +11,25 @@ void print_str(char* s) {
 	while (*s) putchar(*s++);
 }
 
+static char* readline(uint32_t fd, char* buf) {
+     char c;
+     int i = 0;
+     for(;;) {
+         while(sys_read(fd,&c,1) != 1); // keep polling till we get a byte
+         if ((c == '\b' || c == '\x7f') && i > 0) {
+            putchar('\b');
+            i--;
+         } else if (c >= ' ') {
+            putchar(c);
+            buf[i++] = c;
+         } else if (c == '\n' || c == '\r') {
+            buf[i] = '\0';
+	    putchar('\n');
+	    return buf;
+         }
+     }
+}
+
 void init0_main() {
 
 	uint32_t my_tid = sys_get_tid();
@@ -23,14 +42,17 @@ void init0_main() {
 			sys_debug_out(sys_read_ringbuf());
 		}
 	} else {
-		char* test_str="This is a message sent from parent to child\n";
-		sys_write_ringbuf(fork_ret,test_str,__builtin_strlen(test_str));
 		print_str("This is the parent talking using normal sys_debug_out\n");
 	}
 
 	print_str("Testing VFS stuff...\n");
 	uint32_t fd = sys_open("/a/b");
-	char buf[512];
-	sys_read(fd,buf,31);
-	print_str("Read: "); print_str(buf);
+	char buf[1024];
+	print_str("Type something> ");
+	char* line = readline(fd,buf);
+	print_str("You typed: "); print_str(buf); putchar('\n');
+
+	char* test_str="This is a message sent from parent to child\n";
+	sys_write_ringbuf(fork_ret,test_str,__builtin_strlen(test_str));
+
 }

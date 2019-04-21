@@ -45,6 +45,7 @@ uint32_t sys_open(char* filename) {
 }
 
 uint32_t sys_read(uint32_t fd, void* buf, uint32_t len) {
+	thread_yield();
 	inode_t* inode = (inode_t*)fd;
 	uint64_t size = (uint64_t)size;
 	uint32_t retval = (uint32_t)vfs_read(inode,0,buf,len);

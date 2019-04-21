@@ -92,7 +92,9 @@ vector_t dreaddir(filesystem_t *fs, inode_t *dir) {
 
 int64_t dread(filesystem_t *fs, inode_t *inode, uint64_t offset, void *buf, uint64_t sz) {
   dummyfs_t *dfs = fs->data;
-
+  if(inode->type == it_chardev) {
+	return read_console(buf, (int)sz);
+  }
   int num = num_for_inode(dfs, inode);
   switch (num) {
   default: assert(0 && "Not a file!");
@@ -158,7 +160,8 @@ int dprobe(dev_t dev, filesystem_t *fs) {
   dfs->nodes[n_c].type = it_dir;
   dfs->nodes[n_f].type = it_dir;
 
-  dfs->nodes[n_b].type = it_file; dfs->nodes[n_b].size = strlen(datas[n_b]);
+//  dfs->nodes[n_b].type = it_file; dfs->nodes[n_b].size = strlen(datas[n_b]);
+  dfs->nodes[n_b].type = it_chardev;
   dfs->nodes[n_d].type = it_file; dfs->nodes[n_d].size = strlen(datas[n_d]);
   dfs->nodes[n_e].type = it_file; dfs->nodes[n_e].size = strlen(datas[n_e]);
   dfs->nodes[n_g].type = it_file; dfs->nodes[n_g].size = strlen(datas[n_g]);
@@ -185,10 +188,13 @@ void emit_tree(const char *name, inode_t *ino, int indent, vector_t *done) {
   vector_add(done, &ino);
 
   emit_indent(indent);
-  kprintf("'%s' %s (size %d)\n", name,
-          ((ino->type == it_dir) ? "DIR" : ""),
-          ino->size);
-
+  if(ino->type == it_chardev) {
+	  kprintf("'%s' DEV\n");
+  } else {	  
+	  kprintf("'%s' %s (size %d)\n", name,
+        	  ((ino->type == it_dir) ? "DIR" : ""),
+	          ino->size);
+  }
   if (ino->type == it_dir) {
     vector_t files = vfs_readdir(ino);
     for (unsigned i = 0; i < vector_length(&files); ++i) {

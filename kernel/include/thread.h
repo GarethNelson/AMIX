@@ -3,6 +3,8 @@
 
 #include "hal.h"
 #include "adt/ringbuf.h"
+#include "adt/vector.h"
+
 #include <stddef.h>
 #include <stdint.h>
 

@@ -6,7 +6,11 @@
 #include "string.h"
 #include "vfs.h"
 
-#define dbg(args...) kprintf("vfs: " args)
+#ifdef DEBUG_vfs
+# define dbg(args...) kprintf("vfs: " args)
+#else
+# define dbg(args...)
+#endif
 
 #define MAX_SYMLINKS_TO_FOLLOW 10
 
