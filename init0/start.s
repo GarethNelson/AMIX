@@ -2,7 +2,7 @@
 [EXTERN init0_main]
 
 _start:
-	mov esp,0x81004000
+ 	mov esp,0x80024000
 
      mov ax,0x23
      mov ds,ax

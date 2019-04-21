@@ -31,18 +31,18 @@ void init_task_enter(char* str) {
      address_space_t *new_space = kmalloc(sizeof(address_space_t));
      memset(new_space,0,sizeof(address_space_t));
 
-     clone_address_space(new_space,0);
+     clone_address_space(new_space,1);
      kprintf("Setting up new vspace at %p\n",new_space->directory);
 
      switch_address_space(new_space);
      
-     map(0x81000000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
-     map(0x80000000,alloc_pages(PAGE_REQ_NONE,init0_len/4096),init0_len/4096,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
+     map(0x80020000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
+     map(0x80000000,alloc_pages(PAGE_REQ_NONE,(init0_len/4096)+2),(init0_len/4096)+2,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
 
 
      switch_address_space(new_space);
 
-     memcpy(0x80000000,init0_img,init0_len); 
+     memcpy(0x80000000,init0_img+0x1000,init0_len); 
 
      void (*func_ptr)() = ((Elf32_Ehdr*)init0_img)->e_entry; // 0x80000000;
      kprintf("init0: entry at %p\n", func_ptr);
