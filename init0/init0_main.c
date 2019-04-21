@@ -27,4 +27,10 @@ void init0_main() {
 		sys_write_ringbuf(fork_ret,test_str,__builtin_strlen(test_str));
 		print_str("This is the parent talking using normal sys_debug_out\n");
 	}
+
+	print_str("Testing VFS stuff...\n");
+	uint32_t fd = sys_open("/a/b");
+	char buf[512];
+	sys_read(fd,buf,31);
+	print_str("Read: "); print_str(buf);
 }

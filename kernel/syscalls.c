@@ -1,9 +1,11 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "syscalls.h"
 #include "thread.h"
 #include "hal.h"
+#include "vfs.h"
 
 int sys_debug_out(char c) {
     kprintf("%c",c);
@@ -31,6 +33,22 @@ uint32_t sys_read_ringbuf() {
 	int retval = char_ringbuf_read(&thread_current()->ringbuf,&c,1);
 	if(retval==0) return 0;
 	return (uint32_t)c;
+}
+
+bool check_access(int mode) {
+	return true;
+}
+
+uint32_t sys_open(char* filename) {
+	inode_t* inode = vfs_open(filename,&check_access);
+	return (uint32_t)inode;
+}
+
+uint32_t sys_read(uint32_t fd, void* buf, uint32_t len) {
+	inode_t* inode = (inode_t*)fd;
+	uint64_t size = (uint64_t)size;
+	uint32_t retval = (uint32_t)vfs_read(inode,0,buf,len);
+	return retval;
 }
 
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {

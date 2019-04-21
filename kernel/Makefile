@@ -40,6 +40,7 @@ KERNEL_OBJS=\
 	dummy.o\
 	early_pmm.o\
 	fs_vfat.o\
+	mock_initrd.o\
 	gcov.o\
 	hal.o\
 	kmalloc.o\

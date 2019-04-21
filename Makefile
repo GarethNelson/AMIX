@@ -10,4 +10,4 @@ clean: kernel
 	rm -rf sysroot/
 
 run-qemu: all
-	qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 4G -initrd "sysroot/boot/init0.elf"
+	qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 4G -initrd "sysroot/boot/init0.elf" 
