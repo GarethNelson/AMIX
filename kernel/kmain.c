@@ -16,11 +16,11 @@ void user_enter() {
 
 extern char* default_usercode;
 extern char* default_usercode_end;
-char* init0_img;
-size_t init0_len;
 
-void init_task_enter(char* str) {
-     kprintf("init0: %s\n",str);
+void init_task_enter(multiboot_module_entry_t* mod) {
+ char*		init0_img = mod->mod_start;
+ size_t		init0_len = mod->mod_end - mod->mod_start;
+kprintf("init0: %s\n",mod->string);
 
 	if(!elf_check_file(init0_img)) {
 		kprintf("Bad ELF file!\n");
@@ -69,8 +69,7 @@ void setup_modules() {
                      (unsigned) mod->mod_start,
                      (unsigned) mod->mod_end,
                      (char *) mod->string);
-		init0_img = mod->mod_start;
-		init0_len = mod->mod_end - mod->mod_start;
+			thread_spawn(&init_task_enter,mod,1);
 	   }
 
   }
@@ -81,7 +80,7 @@ void kmain(int argc, char** argv) {
      kprintf("kmain() - Starting main OS...\n");
      setup_modules();
 
-    thread_t* init_task = thread_spawn(&init_task_enter,"A",1);
+//    thread_t* init_task = thread_spawn(&init_task_enter,"A",1);
 
     for(;;) thread_yield();
 }

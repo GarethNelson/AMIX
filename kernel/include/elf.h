@@ -54,7 +54,18 @@ enum Elf_Type {
 	ET_REL		= 1, // Relocatable File
 	ET_EXEC		= 2  // Executable File
 };
- 
+
+typedef struct {
+	Elf32_Word		p_type;
+	Elf32_Off		p_offset;
+	Elf32_Addr		p_vaddr;
+	Elf32_Addr		p_paddr;
+	Elf32_Word		p_filesz;
+	Elf32_Word		p_memsz;
+	Elf32_Word		p_flags;
+	Elf32_Word		p_align;
+} Elf32_Phdr;
+
 # define EM_386		(3)  // x86 Machine Type
 # define EV_CURRENT	(1)  // ELF Current Version
 
