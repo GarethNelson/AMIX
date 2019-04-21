@@ -18,7 +18,7 @@ void init0_main() {
 
 	uint32_t fork_ret = sys_fork();
 	if(fork_ret==0) {
-//		print_str("CHILD!\n");
+		print_str("This is the child talking using normal sys_debug_out\n");
 		for(;;) {
 			sys_debug_out(sys_read_ringbuf());
 		}
