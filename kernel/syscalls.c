@@ -21,7 +21,7 @@ uint32_t sys_get_tid() {
 }
 
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
-#define X(num,name) [num] &sys_##name,
+#define X(num,name,params) [num] &sys_##name,
         #include "syscalls.def"
 #undef X
 };

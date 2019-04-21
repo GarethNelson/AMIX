@@ -8,7 +8,7 @@ uint32_t sys_get_tid();
 #define SYSCALL_COUNT 3
 
 enum syscall_numbers {
-#define X(num,name) SYSCALL_##name=num,
+#define X(num,name,params) SYSCALL_##name=num,
 	#include "syscalls.def"
 #undef X
 };
