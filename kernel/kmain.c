@@ -27,6 +27,20 @@ kprintf("init0: %s\n",mod->string);
 		for(;;);
 	}
 
+     Elf32_Ehdr* elf_header = (Elf32_Ehdr*)init0_img;
+     Elf32_Off   ph_offset  = elf_header->e_phoff;
+     uintptr_t elf_ph_header_ptr = elf_header;
+     elf_ph_header_ptr += (uint32_t)ph_offset;
+     Elf32_Phdr* elf_ph_header = elf_ph_header_ptr;
+
+     kprintf("init0: Loading valid ELF...\n");
+     kprintf("elf_header: %p, ph_offset: %p, ph_header: %p, entry: %p, ph_num: %p\n", elf_header, ph_offset,elf_ph_header,elf_header->e_entry,elf_header->e_phnum);
+
+     kprintf("\t p_type=%p, p_offset=%p, p_vaddr=%p, p_paddr=%p, p_filesz=%p\n", elf_ph_header->p_type,
+									elf_ph_header->p_offset,
+									elf_ph_header->p_vaddr,
+									elf_ph_header->p_paddr,
+									elf_ph_header->p_filesz);
 
      address_space_t *new_space = kmalloc(sizeof(address_space_t));
      memset(new_space,0,sizeof(address_space_t));
@@ -37,15 +51,15 @@ kprintf("init0: %s\n",mod->string);
      switch_address_space(new_space);
      
      map(0x80020000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
-     map(0x80000000,alloc_pages(PAGE_REQ_NONE,(init0_len/4096)+2),(init0_len/4096)+2,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
+     map(elf_ph_header->p_vaddr,alloc_pages(PAGE_REQ_NONE,(init0_len/4096)+2),(init0_len/4096)+2,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
 
 
      switch_address_space(new_space);
 
-     memcpy(0x80000000,init0_img+0x1000,init0_len); 
+     memcpy(elf_ph_header->p_vaddr,init0_img+elf_ph_header->p_offset,init0_len); 
 
      void (*func_ptr)() = ((Elf32_Ehdr*)init0_img)->e_entry; // 0x80000000;
-     kprintf("init0: entry at %p\n", func_ptr);
+     kprintf("Jumping to entry...\n");
      func_ptr();
      for(;;);
 }
