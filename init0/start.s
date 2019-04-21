@@ -23,6 +23,23 @@ _start:
 	mov esi, greeter_string
 	call print_string
 
+	mov eax,0
+	int 0x80
+	mov ebx,eax
+
+	mov esi,fork_ret_string
+	call print_string
+
+	mov eax,ebx
+	push eax
+	mov eax,sys_debug_out_num
+	int 0x80
+
+	push 10
+	mov eax, sys_debug_out
+	int 0x80
+
+
 loop:	jmp loop
 	call init0_main
 
@@ -41,7 +58,7 @@ print_string:
 	ret
 
 greeter_string:          db 10,'[USERCODE]',9, 'Hello from init0',10,0
-
+fork_ret_string:	 db 10,'Fork returned: ',0
 %define X(syscall_num,syscall_name) sys_ %+ syscall_name equ syscall_num
 	%[%include "AMIX/syscalls.def"]
 %undef X

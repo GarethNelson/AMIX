@@ -104,6 +104,7 @@
 #include "x86/io.h"
 #include "x86/regs.h"
 #include "syscalls.h"
+#include "thread.h"
 
 #define NUM_TRAP_STRS 20
 static const char *trap_strs[NUM_TRAP_STRS] = {
@@ -468,12 +469,36 @@ void syscall_handler(x86_regs_t* regs) {
 	uint32_t syscall_no = regs->eax;
 	uint32_t* userstack = regs->useresp;
 
-        if(syscall_no >0 && syscall_no < (sizeof(syscalls_table)/sizeof(void*)) && syscalls_table[syscall_no]) {
-		regs->eax = syscalls_table[syscall_no](userstack[0],userstack[1],userstack[2],userstack[3]);
+	if(syscall_no==0) {
+		thread_t* parent = thread_current();
+		thread_t* child  = thread_spawn(NULL,NULL,1);
+		memcpy(child->kernel_stack,parent->kernel_stack,0x2000);
+		memcpy(child->stack,parent->stack,0x2000);
+		address_space_t *new_space = kmalloc(sizeof(address_space_t));
+		memset(new_space,0,sizeof(address_space_t));
+
+		clone_address_space(new_space,1);
+		*tls_slot(TLS_SLOT_TCB, child->stack) = (uintptr_t)child;
+		if(setjmp(child->jmpbuf)==0) {
+			jmp_buf_set_cr3(child->jmpbuf, new_space->directory);
+			scheduler_ready(child);
+			regs->eax = thread_current();
+			thread_yield();
+		} else {
+			switch_address_space(new_space);
+		}
+		regs->eax = thread_current();
+		if(regs->eax==1) regs->eax=(uint32_t)child;
+
+		if(regs->eax==parent) regs->eax=0;
 	} else {
-		char buf[512];
-		ksnprintf(buf,512,"unknown syscall number %x invoked\n", regs->eax);
-	   	debugger_except(regs, buf);
+		if(syscall_no >0 && syscall_no < (sizeof(syscalls_table)/sizeof(void*)) && syscalls_table[syscall_no]) {
+			regs->eax = syscalls_table[syscall_no](userstack[0],userstack[1],userstack[2],userstack[3]);
+		} else {
+			char buf[512];
+			ksnprintf(buf,512,"unknown syscall number %x invoked\n", regs->eax);
+		   	debugger_except(regs, buf);
+		}
 	}
 }
 

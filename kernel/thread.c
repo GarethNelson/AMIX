@@ -100,7 +100,7 @@ static __attribute__((noreturn,noinline)) void trampoline() {
   for (;;) ;
 }
 
-static uintptr_t *tls_slot(unsigned idx, uintptr_t stack_pointer) { 
+uintptr_t *tls_slot(unsigned idx, uintptr_t stack_pointer) { 
   uintptr_t *tls = (uintptr_t*) (stack_pointer & ~(THREAD_STACK_SZ-1));
   return &tls[idx];
 }
@@ -113,6 +113,14 @@ uintptr_t *thread_tls_slot(unsigned idx) {
 
 thread_t *thread_current() {
   return (thread_t*) *thread_tls_slot(TLS_SLOT_TCB);
+}
+
+void schedule_thread(thread_t* t) {
+  spinlock_acquire(&thread_list_lock);
+  t->next = thread_list_head;
+  t->next->prev = t;
+  thread_list_head = t;
+  spinlock_release(&thread_list_lock);
 }
 
 thread_t *thread_spawn(void (*fn)(void*), void *p, uint8_t auto_free) {

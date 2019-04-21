@@ -49,6 +49,14 @@ static inline void jmp_buf_set_stack(jmp_buf buf, uintptr_t stack) {
   buf[0].esp = stack;
 }
 
+static inline void jmp_buf_set_cr3(jmp_buf buf, uintptr_t cr3) {
+  buf[0].cr3 = cr3;
+}
+
+static inline void jmp_buf_set_eip(jmp_buf buf, uintptr_t eip) {
+  buf[0].eip = eip;
+}
+
 static inline void jmp_buf_to_regs(struct regs *r, jmp_buf buf) {
   r->esp = buf[0].esp;
   r->ebp = buf[0].ebp;

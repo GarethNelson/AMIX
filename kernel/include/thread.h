@@ -2,6 +2,8 @@
 #define THREAD_H
 
 #include "hal.h"
+#include <stddef.h>
+#include <stdint.h>
 
 #define THREAD_READY 0
 #define THREAD_RUN   1
@@ -89,5 +91,7 @@ void thread_yield();
 
 /* Returns a pointer to the 'idx'th entry in thread local storage. */
 uintptr_t *thread_tls_slot(unsigned idx);
+
+uintptr_t *tls_slot(unsigned idx, uintptr_t stack_pointer);
 
 #endif
