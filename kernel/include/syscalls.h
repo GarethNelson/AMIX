@@ -12,8 +12,9 @@
 	uint32_t sys_read(uint32_t fd, void* buf, uint32_t len);
 	uint32_t sys_write(uint32_t fd, void* buf, uint32_t len);
 	uint32_t sys_exit();
+	uint32_t sys_wait_tid(uint32_t tid);
 
-#define SYSCALL_COUNT 9
+#define SYSCALL_COUNT 10
 
 	enum syscall_numbers {
 	#define X(num,name,params) SYSCALL_##name=num,

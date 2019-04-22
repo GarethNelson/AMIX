@@ -76,6 +76,13 @@ uint32_t sys_exit() {
 	return 0; // we should never reach here in theory
 }
 
+uint32_t sys_wait_tid(uint32_t tid) {
+	thread_t* other_task = (thread_t*)tid;
+	while(other_task->state != THREAD_DEAD) thread_sleep();
+	thread_destroy(other_task);
+	return 0;
+}
+
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
 #define X(num,name,params) [num] &sys_##name,
         #include "syscalls.def"
