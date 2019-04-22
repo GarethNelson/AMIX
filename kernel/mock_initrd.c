@@ -116,6 +116,10 @@ int64_t dread(filesystem_t *fs, inode_t *inode, uint64_t offset, void *buf, uint
 
 int64_t dwrite(filesystem_t *fs, inode_t *inode, uint64_t offset, void *buf, uint64_t sz) {
   dummyfs_t *dfs = fs->data;
+  if(inode->type == it_chardev) {
+	write_console(buf, (int)sz);
+	return sz;
+  }
   int num = num_for_inode(dfs, inode);
   switch (num) {
   default: assert(0 && "Not a file!");

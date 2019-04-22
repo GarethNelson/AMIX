@@ -10,9 +10,9 @@
 	uint32_t sys_read_ringbuf();
 	uint32_t sys_open(char* filename);
 	uint32_t sys_read(uint32_t fd, void* buf, uint32_t len);
+	uint32_t sys_write(uint32_t fd, void* buf, uint32_t len);
 
-
-#define SYSCALL_COUNT 7
+#define SYSCALL_COUNT 8
 
 	enum syscall_numbers {
 	#define X(num,name,params) SYSCALL_##name=num,

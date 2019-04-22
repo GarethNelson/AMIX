@@ -52,6 +52,13 @@ uint32_t sys_read(uint32_t fd, void* buf, uint32_t len) {
 	return retval;
 }
 
+uint32_t sys_write(uint32_t fd, void* buf, uint32_t len) {
+	inode_t* inode = (inode_t*)fd;
+	uint64_t size = (uint64_t)size;
+	uint32_t retval = (uint32_t)vfs_write(inode,0,buf,len);
+	return retval;
+}
+
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
 #define X(num,name,params) [num] &sys_##name,
         #include "syscalls.def"
