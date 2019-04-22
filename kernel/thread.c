@@ -169,6 +169,37 @@ thread_t *thread_spawn(void (*fn)(void*), void *p, uint8_t auto_free) {
   }
 }
 
+thread_t *thread_exec(void (*fn)(void*), void* p) {
+	thread_t *t = thread_current();
+	kfree((void*)t->ringbuf_backing);
+
+
+	t->ringbuf_backing = kmalloc(4096);
+	t->ringbuf = make_char_ringbuf(t->ringbuf_backing,4096);
+
+	spinlock_acquire(&thread_list_lock);
+	t->next = thread_list_head;
+	t->next->prev = t;
+	thread_list_head = t;
+	spinlock_release(&thread_list_lock);
+
+	*tls_slot(1, t->stack) = (uintptr_t)fn;
+	*tls_slot(2, t->stack) = (uintptr_t)p;
+
+	if (setjmp(t->jmpbuf) == 0) {
+		jmp_buf_set_stack(t->jmpbuf, t->stack + THREAD_STACK_SZ);
+		scheduler_ready(t);
+		yield();
+		kprintf("WE SHOULD NOT BE HERE!\n");
+		return t;
+	} else {
+	    /* Tail call to trampoline which is defined as noinline, to force the creation
+	       of a new stack frame as the previous stack frame is now invalid! */
+	    trampoline();
+	}
+	
+}
+
 void thread_destroy(thread_t *t) {
   spinlock_acquire(&thread_list_lock);
   if (t->next)

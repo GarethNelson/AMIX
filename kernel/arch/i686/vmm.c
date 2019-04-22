@@ -365,18 +365,16 @@ static int page_fault(x86_regs_t *regs, void *ptr) {
 
   /** Ignore this copy-on-write stuff for now. { */
   if (cow_handle_page_fault(cr2, regs->error_code)) {
-//	kprintf("COW!\n");
-
 	  return 0;
   }
 
   /* Just print out a panic message and trap to the debugger if one
      is available. If not, ``debugger_trap()`` will just spin
      infinitely. */
-/*  kprintf("*** Page fault @ 0x%08x (", cr2);
+  kprintf("*** Page fault @ 0x%08x (", cr2);
   kprint_bitmask("iruwp", regs->error_code);
   kprintf(")\n");
-  debugger_trap(regs);*/
+  debugger_trap(regs);
   return 0;
 }
 

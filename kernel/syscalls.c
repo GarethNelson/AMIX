@@ -7,6 +7,7 @@
 #include "hal.h"
 #include "vfs.h"
 #include "fs.h"
+#include "mmap.h"
 
 int sys_debug_out(char c) {
     kprintf("%c",c);
@@ -70,7 +71,7 @@ uint32_t sys_write(uint32_t fd, void* buf, uint32_t len) {
 }
 
 uint32_t sys_exit() {
-	thread_wake(thread_current()->parent_task);
+//	thread_wake(thread_current()->parent_task);
 	thread_kill(thread_current());
 	thread_yield();
 	return 0; // we should never reach here in theory
@@ -78,9 +79,53 @@ uint32_t sys_exit() {
 
 uint32_t sys_wait_tid(uint32_t tid) {
 	thread_t* other_task = (thread_t*)tid;
-	while(other_task->state != THREAD_DEAD) thread_sleep();
+	while(other_task->state != THREAD_DEAD) thread_yield();
 	thread_destroy(other_task);
 	return 0;
+}
+
+extern char* default_usercode;
+extern char* default_usercode_end;
+
+void exec_proc(char* filename) {
+	// first let's scrap all user pages
+	for(uintptr_t v=0x10000; v<MMAP_KERNEL_START; v=iterate_mappings(v)) {
+		unsigned flags;
+		get_mapping(v,&flags);
+		if((flags & PAGE_USER)==PAGE_USER) { 
+			uint64_t p = unmap(v,1);
+		}
+	}
+	kprintf("Unmapped old process!\n");
+	map(0x80020000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
+	map(0x80000000,alloc_pages(PAGE_REQ_NONE,1),1,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
+	
+	memcpy(0x80000000,&default_usercode,4096);
+	kprintf("Jumping to entry...\n");
+	void (*func_ptr)() = 0x80000000;
+
+	__asm__ volatile("  \ 
+sti; \
+ 	mov $0x23, %%ax; \ 
+     mov %%ax, %%ds; \ 
+     mov %%ax, %%es; \ 
+     mov %%ax, %%fs; \ 
+     mov %%ax, %%gs; \ 
+     mov %%esp, %%eax; \ 
+     pushl $0x23; \ 
+     pushl %%eax; \ 
+     pushf; \ 
+     pushl $0x1B; \ 
+     push %0; \ 
+     iret; \ 
+     ": : "b"(func_ptr));
+
+	kprintf("ERROR! Should never get here!\n");   
+	return (uint32_t)func_ptr;
+}
+
+uint32_t sys_exec(char* filename) {
+	thread_exec(&exec_proc, filename);
 }
 
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
