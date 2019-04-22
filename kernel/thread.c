@@ -6,6 +6,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "kmalloc.h"
+#include "fs.h"
 
 #include "x86/io.h"
 
@@ -136,7 +137,7 @@ thread_t *thread_spawn(void (*fn)(void*), void *p, uint8_t auto_free) {
   t->vspace = get_current_address_space();
   t->ringbuf_backing = kmalloc(4096);
   t->ringbuf = make_char_ringbuf(t->ringbuf_backing,4096);
-  t->fds = vector_new(sizeof(inode_t*),0);
+  t->fds = vector_new(sizeof(file_desc_t),0);
   spinlock_acquire(&thread_list_lock);
   t->next = thread_list_head;
   t->next->prev = t;

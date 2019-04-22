@@ -6,6 +6,7 @@
 #include "thread.h"
 #include "hal.h"
 #include "vfs.h"
+#include "fs.h"
 
 int sys_debug_out(char c) {
     kprintf("%c",c);
@@ -41,22 +42,30 @@ bool check_access(int mode) {
 
 uint32_t sys_open(char* filename) {
 	inode_t* inode = vfs_open(filename,&check_access);
-	vector_add(&thread_current()->fds,&inode);
+        file_desc_t* fd = kmalloc(sizeof(file_desc_t));
+        fd->inode = inode;
+	fd->offs  = 0;
+	vector_add(&thread_current()->fds,fd);
 	vector_reserve(&thread_current()->fds,vector_length(&thread_current()->fds)+4);
 	return vector_length(&thread_current()->fds)-1;
 }
 
 uint32_t sys_read(uint32_t fd, void* buf, uint32_t len) {
-	inode_t** inode = vector_get(&thread_current()->fds, fd);
+        file_desc_t* file_desc = vector_get(&thread_current()->fds,fd);
+	inode_t* inode = file_desc->inode;
 	uint64_t size = (uint64_t)size;
-	uint32_t retval = (uint32_t)vfs_read(*inode,0,buf,len);
+	uint32_t retval = (uint32_t)vfs_read(inode,file_desc->offs,buf,len);
+	file_desc->offs += retval;
 	return retval;
 }
 
+
 uint32_t sys_write(uint32_t fd, void* buf, uint32_t len) {
-	inode_t** inode = vector_get(&thread_current()->fds, fd);
+        file_desc_t* file_desc = vector_get(&thread_current()->fds,fd);
+	inode_t* inode = file_desc->inode;
 	uint64_t size = (uint64_t)size;
-	uint32_t retval = (uint32_t)vfs_write(*inode,0,buf,len);
+	uint32_t retval = (uint32_t)vfs_write(inode,file_desc->offs,buf,len);
+	file_desc->offs += retval;
 	return retval;
 }
 
