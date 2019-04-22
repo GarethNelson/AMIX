@@ -11,8 +11,9 @@
 	uint32_t sys_open(char* filename);
 	uint32_t sys_read(uint32_t fd, void* buf, uint32_t len);
 	uint32_t sys_write(uint32_t fd, void* buf, uint32_t len);
+	uint32_t sys_exit();
 
-#define SYSCALL_COUNT 8
+#define SYSCALL_COUNT 9
 
 	enum syscall_numbers {
 	#define X(num,name,params) SYSCALL_##name=num,

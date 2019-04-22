@@ -69,6 +69,13 @@ uint32_t sys_write(uint32_t fd, void* buf, uint32_t len) {
 	return retval;
 }
 
+uint32_t sys_exit() {
+	thread_wake(thread_current()->parent_task);
+	thread_kill(thread_current());
+	thread_yield();
+	return 0; // we should never reach here in theory
+}
+
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
 #define X(num,name,params) [num] &sys_##name,
         #include "syscalls.def"

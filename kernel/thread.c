@@ -129,6 +129,8 @@ thread_t *thread_spawn(void (*fn)(void*), void *p, uint8_t auto_free) {
 
   memset(t, 0, sizeof(thread_t));
 
+  t->parent_task = thread_current();
+
   t->auto_free = auto_free;
   t->stack = alloc_stack_and_tls();
 

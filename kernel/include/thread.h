@@ -21,6 +21,7 @@
 /* A thread in the system. This struct should be as lightweight as possible.
 
    None of this state must be mutated outside of the thread_* functions. */
+typedef struct thread thread_t;
 typedef struct thread {
   /* Thread ID - *not* guaranteed to be unique in the system. */
   unsigned id;
@@ -67,6 +68,8 @@ typedef struct thread {
   char* ringbuf_backing;
 
   vector_t fds;
+
+  thread_t* parent_task;
 
 } thread_t;
 

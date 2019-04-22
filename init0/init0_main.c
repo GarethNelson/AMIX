@@ -71,4 +71,15 @@ void init0_main() {
 	uint32_t len=sys_read(fd,buf,35);
 	print_str("Contents of /a/c/d: "); print_str(buf);
 	
+	print_str("Testing exit\n");
+	fork_ret = sys_fork();
+	if(fork_ret==0) {
+		print_str("In child process, about to call sys_exit()\n");
+		sys_exit();
+		print_str("You should not see this");
+		for(;;);
+	} else {
+		print_str("Back in the parent!\n");
+	}
 }
+
