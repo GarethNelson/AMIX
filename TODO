@@ -1,3 +1,6 @@
+make file descriptors an actual seperate type rather than just a pointer to the inode
+	should have offset stored
+
 expand ringbuf to deal with messages rather than just a character stream
 
 message passing system:
