@@ -4,6 +4,7 @@
 #include "hal.h"
 #include "adt/ringbuf.h"
 #include "adt/vector.h"
+#include "vfs.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -64,6 +65,9 @@ typedef struct thread {
 
   char_ringbuf_t ringbuf;
   char* ringbuf_backing;
+
+  vector_t fds;
+
 } thread_t;
 
 /* Creates a new thread object, starts it, and returns it.

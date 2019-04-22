@@ -48,6 +48,8 @@ void init0_main() {
 	print_str("Testing VFS stuff...\n");
 	uint32_t fd = sys_open("/a/b");
 
+	print_str("Opened /a/b with fd: "); sys_debug_out_num(fd); print_str("\n");
+
 	char* s="This is a string written to the FD\n";
 	sys_write(fd,s,__builtin_strlen(s));
 
@@ -60,5 +62,13 @@ void init0_main() {
 
 
        	char* test_str="This is a message sent from parent to child\n";
-	sys_write_ringbuf(fork_ret,test_str,__builtin_strlen(test_str));	
+	sys_write_ringbuf(fork_ret,test_str,__builtin_strlen(test_str));
+
+	print_str("Testing normal file reading:\n");
+	fd = sys_open("/a/c/d");
+	print_str("Opened /a/c/d with fd: "); sys_debug_out_num(fd); print_str("\n");
+
+	uint32_t len=sys_read(fd,buf,35);
+	print_str("Contents of /a/c/d: "); print_str(buf);
+	
 }

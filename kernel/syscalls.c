@@ -41,21 +41,22 @@ bool check_access(int mode) {
 
 uint32_t sys_open(char* filename) {
 	inode_t* inode = vfs_open(filename,&check_access);
-	return (uint32_t)inode;
+	vector_add(&thread_current()->fds,&inode);
+	vector_reserve(&thread_current()->fds,vector_length(&thread_current()->fds)+4);
+	return vector_length(&thread_current()->fds)-1;
 }
 
 uint32_t sys_read(uint32_t fd, void* buf, uint32_t len) {
-	thread_yield();
-	inode_t* inode = (inode_t*)fd;
+	inode_t** inode = vector_get(&thread_current()->fds, fd);
 	uint64_t size = (uint64_t)size;
-	uint32_t retval = (uint32_t)vfs_read(inode,0,buf,len);
+	uint32_t retval = (uint32_t)vfs_read(*inode,0,buf,len);
 	return retval;
 }
 
 uint32_t sys_write(uint32_t fd, void* buf, uint32_t len) {
-	inode_t* inode = (inode_t*)fd;
+	inode_t** inode = vector_get(&thread_current()->fds, fd);
 	uint64_t size = (uint64_t)size;
-	uint32_t retval = (uint32_t)vfs_write(inode,0,buf,len);
+	uint32_t retval = (uint32_t)vfs_write(*inode,0,buf,len);
 	return retval;
 }
 
