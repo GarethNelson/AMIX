@@ -309,7 +309,7 @@ static void set_idt_entry(idt_entry_t *e, uint32_t base, uint16_t sel, uint8_t d
 void init_pit() {
 outb(0x43, 0x36);
 
-    uint32_t divisor = 1193182 / 10000;
+    uint32_t divisor = 1193182 / 1000;
     // Divisor has to be sent byte-wise, so split here into upper/lower bytes.
     uint8_t l = (uint8_t)(divisor & 0xFF);
     uint8_t h = (uint8_t)( (divisor>>8) & 0xFF );

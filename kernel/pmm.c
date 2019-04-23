@@ -126,7 +126,7 @@ uint64_t alloc_pages(int req, size_t num) {
 }
 
 int free_page(uint64_t page) {
-  return free_pages(page, 1);
+      	return free_pages(page, 1);
 }
 
 int free_pages(uint64_t pages, size_t num) {

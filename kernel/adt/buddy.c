@@ -90,9 +90,8 @@ int buddy_init(buddy_t *bd, uint8_t *overhead_storage,
 
 /**
    Now we get to the meat and bones of the buddy allocator - allocation! { */
-
+#pragma GCC optimize ("O3")
 uint64_t buddy_alloc(buddy_t *bd, unsigned sz) {
-
   /** Firstly we find the smallest power of 2 that will hold the allocation request, and take the log base 2 of it. { */
   unsigned log_sz = log2_roundup(sz);
   if (log_sz > MAX_BUDDY_SZ_LOG2)

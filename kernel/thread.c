@@ -253,7 +253,7 @@ void thread_kill(thread_t *t) {
 
 
 int pit_handler(struct regs *r, void* p) {
-    /*if(r->eip <= 0xC0000000)*/ thread_yield();
+    if(r->eip <= 0xC0000000) thread_yield();
     return 0;
 }
 

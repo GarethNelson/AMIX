@@ -566,7 +566,7 @@ int clone_address_space(address_space_t *dest, int make_cow) {
 	          *d_pte = (*s_pte & ~X86_WRITE) | X86_COW;
 	          cow_refcnt_inc(*s_pte & 0xFFFFF000);
 	        } else {*/
-		  if(is_user) {
+		  if(*s_pte & X86_USER) {
 			 *d_pte = alloc_page(PAGE_REQ_NONE);
 
 //			fast_map(src_v,*s_pte,PAGE_WRITE);

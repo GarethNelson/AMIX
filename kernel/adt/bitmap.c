@@ -44,8 +44,10 @@ int bitmap_isclear(bitmap_t *xb, unsigned idx) {
   return !bitmap_isset(xb, idx);
 }
 
+__attribute__((hot))
 int64_t bitmap_first_set(bitmap_t *xb) {
-  if(xb->first_set>-1) return xb->first_set;
+
+  if(xb->first_set != -1) return xb->first_set;
   for (uint64_t i = 0; i < (xb->max_extent >> 3) + 1ULL; i ++) {
     if (xb->data[i] == 0) continue;
 
