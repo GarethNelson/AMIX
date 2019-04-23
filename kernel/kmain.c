@@ -117,5 +117,5 @@ void kmain(int argc, char** argv) {
 
      setup_modules();
 
-     for(;;) thread_yield();
+     for(;;) thread_sleep(thread_current());
 }

@@ -4,16 +4,19 @@
 #include "stdio.h"
 #include "assert.h"
 
+#pragma GCC optimize ("O3")
 /* Returns the index of the least significant bit that is set in byte.
    If byte == 0, the behaviour is undefined. */
 static int lsb_set(uint8_t byte) {
-  int i = 0;
-  /* FIXME: Surely something in Hacker's delight could speed this up? */
-  while ((byte & 1) == 0) {
-    ++i;
-    byte >>= 1;
-  }
-  return i;
+unsigned int v;  // find the number of trailing zeros in 32-bit v 
+int r;           // result goes here
+static const int MultiplyDeBruijnBitPosition[32] = 
+{
+  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 
+  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+};
+r = MultiplyDeBruijnBitPosition[((uint32_t)((byte & -byte) * 0x077CB531U)) >> 27];
+     return r; 
 }
 
 void bitmap_init(bitmap_t *xb, uint8_t *storage, int64_t max_extent) {

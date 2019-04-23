@@ -512,6 +512,7 @@ static int fast_unmap(uintptr_t v) {
 }
 
 
+#pragma GCC optimize("O3")
 __attribute__((hot))
 __attribute__((flatten))
 int clone_address_space(address_space_t *dest, int make_cow) {

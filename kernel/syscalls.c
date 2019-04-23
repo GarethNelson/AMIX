@@ -31,13 +31,14 @@ uint32_t sys_get_tid() {
 uint32_t sys_write_ringbuf(uint32_t dest_tid, char *s, uint32_t size) {
 	thread_t* dest = (thread_t*)dest_tid;
 	char_ringbuf_write(&dest->ringbuf, s, size);
+	thread_wake(dest);
 	return 0;
 }
 
 uint32_t sys_read_ringbuf() {
 	char c;
 	int retval;
-        while((retval = char_ringbuf_read(&thread_current()->ringbuf,&c,1))==0) thread_yield();
+        while((retval = char_ringbuf_read(&thread_current()->ringbuf,&c,1))==0) thread_sleep();
 	return (uint32_t)c;
 }
 

@@ -10,7 +10,8 @@ void putchar(char c) {
 }
 
 void print_str(char* s) {
-	while (*s) putchar(*s++);
+	sys_debug_out_str(s);
+	//	while (*s) putchar(*s++);
 }
 
 static char* readline(uint32_t fd, char* buf) {

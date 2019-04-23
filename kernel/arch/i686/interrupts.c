@@ -453,7 +453,7 @@ int unregister_interrupt_handler(int num, interrupt_handler_t handler, void *p) 
     This function takes a pointer to the register state; all these registers will be restored after it returns to it can make modifications to the register state too. { */
 
 void interrupt_handler(x86_regs_t *regs) {
-  unsigned num = regs->interrupt_num;
+      	unsigned num = regs->interrupt_num;
 
   ack_irq(num);
 
@@ -491,7 +491,6 @@ void syscall_handler(x86_regs_t* regs) {
 		memcpy(child->stack,parent->stack,0x2000);
 		address_space_t *new_space = kmalloc(sizeof(address_space_t));
 		memset(new_space,0,sizeof(address_space_t));
-
 		clone_address_space(new_space,0);
 		*tls_slot(TLS_SLOT_TCB, child->stack) = (uintptr_t)child;
 		if(setjmp(child->jmpbuf)==0) {
