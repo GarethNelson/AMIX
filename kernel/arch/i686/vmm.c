@@ -116,6 +116,7 @@ We define a set of constants for the flags available in a PTE/PDE. We use one of
 #include "string.h"
 #include "x86/io.h"
 #include "x86/regs.h"
+#include "vmspace.h"
 
 #ifdef DEBUG_vmm
 # define dbg(args...) kprintf("vmm: " args)
@@ -364,7 +365,7 @@ static int page_fault(x86_regs_t *regs, void *ptr) {
   uint32_t cr2 = read_cr2();
 
   /** Ignore this copy-on-write stuff for now. { */
-  if (cow_handle_page_fault(cr2, regs->error_code)) {
+  if (cow_handle_page_fault(cr2, regs->error_code)==0) {
 	  return 0;
   }
 
@@ -374,6 +375,8 @@ static int page_fault(x86_regs_t *regs, void *ptr) {
   kprintf("*** Page fault @ 0x%08x (", cr2);
   kprint_bitmask("iruwp", regs->error_code);
   kprintf(")\n");
+
+  kprintf("Error %x\n",regs->error_code);
   debugger_trap(regs);
   return 0;
 }
@@ -479,8 +482,44 @@ int init_virtual_memory() {
    To do that, we can use the recursive page directory trick again, with
    a different base, so we can access the PDEs and PTEs of both the source
    and destination address spaces simultaneously! { */
+
+vmspace_t kernel_vmspace;
+
+static int fast_map(uintptr_t v, uint64_t p, unsigned flags) {
+//  spinlock_acquire(&current->lock);
+
+
+  *PAGE_TABLE_ENTRY(RPDT_BASE, v) = (p & 0xFFFFF000) |
+    to_x86_flags(flags) | X86_PRESENT;
+//  spinlock_release(&current->lock);
+  return 0;
+}
+
+static int fast_unmap(uintptr_t v) {
+
+  uint32_t *pte = PAGE_TABLE_ENTRY(RPDT_BASE, v);
+
+
+
+  *pte = 0;
+
+  /* Invalidate TLB entry. */
+  uintptr_t *pv = (uintptr_t*)v;
+  __asm__ volatile("invlpg %0" : : "m" (*pv));
+
+
+  return 0;
+}
+
+
+__attribute__((hot))
+__attribute__((flatten))
 int clone_address_space(address_space_t *dest, int make_cow) {
+
   spinlock_acquire(&global_vmm_lock);
+
+	uintptr_t src_v = vmspace_alloc(&kernel_vmspace,4096,0);
+	uintptr_t dst_v = vmspace_alloc(&kernel_vmspace,4096,0);
 
   /* Allocate a page for the new page directory */
   uint32_t p = alloc_page(PAGE_REQ_NONE);
@@ -518,20 +557,41 @@ int clone_address_space(address_space_t *dest, int make_cow) {
       for (unsigned j = 0; j < 1024; ++j) {
         uint32_t *d_pte = PAGE_TABLE_ENTRY(RPDT_BASE2, i + j * PAGE_SIZE);
         uint32_t *s_pte = PAGE_TABLE_ENTRY(RPDT_BASE,  i + j * PAGE_SIZE);
-
         /* If the page is user-mode and writable, make it copy-on-write. */
-        if (make_cow && is_user && (*s_pte & X86_WRITE)) {
-          *d_pte = (*s_pte & ~X86_WRITE) | X86_COW;
-          cow_refcnt_inc(*s_pte & 0xFFFFF000);
-        } else {
-          *d_pte = *s_pte;
-        }
+	if(*s_pte & X86_PRESENT) {
+	/*	if (make_cow && is_user && (*s_pte & X86_WRITE)) {
+	          *d_pte = (*s_pte & ~X86_WRITE) | X86_COW;
+	          cow_refcnt_inc(*s_pte & 0xFFFFF000);
+	        } else {*/
+		  if(is_user) {
+			 *d_pte = alloc_page(PAGE_REQ_NONE);
+
+//			fast_map(src_v,*s_pte,PAGE_WRITE);
+			*PAGE_TABLE_ENTRY(RPDT_BASE, src_v) = (*s_pte & 0xFFFFF000) |
+			    X86_WRITE | X86_PRESENT;
+
+//			fast_map(dst_v,*d_pte,PAGE_WRITE);
+			*PAGE_TABLE_ENTRY(RPDT_BASE, dst_v) = (*d_pte & 0xFFFFF000) |
+			    X86_WRITE | X86_PRESENT;
+
+			__builtin_memcpy(dst_v, src_v, 4096);
+			fast_unmap(src_v);
+			fast_unmap(dst_v);
+			*d_pte |= (*s_pte & 0x00000FFF);
+		  } else {
+			 *d_pte = *s_pte;
+		  }
+	        //}
+	}
       }
     }
   }
 
   dbg("finished clone\n");
   spinlock_release(&global_vmm_lock);
+
+  vmspace_free(&kernel_vmspace,4096,src_v,0);
+  vmspace_free(&kernel_vmspace,4096,dst_v,0);
 
   return 0;
 }

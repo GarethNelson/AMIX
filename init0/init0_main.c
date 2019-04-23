@@ -3,8 +3,10 @@
 
 #include <AMIX/syscalls.h>
 
+uint32_t my_tid;
+
 void putchar(char c) {
-	sys_debug_out((uint32_t)c);
+     sys_debug_out((uint32_t)c);
 }
 
 void print_str(char* s) {
@@ -32,7 +34,7 @@ static char* readline(uint32_t fd, char* buf) {
 
 void init0_main() {
 
-	uint32_t my_tid = sys_get_tid();
+	my_tid = sys_get_tid();
 	print_str("My TID: "); sys_debug_out_num(my_tid); print_str("\n");
 
 	uint32_t fork_ret = sys_fork();

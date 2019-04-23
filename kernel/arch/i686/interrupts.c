@@ -306,6 +306,21 @@ static void set_idt_entry(idt_entry_t *e, uint32_t base, uint16_t sel, uint8_t d
 #define PIC_ICW4  0x01
 #define PIC_8086  0x01
 
+void init_pit() {
+outb(0x43, 0x36);
+
+    uint32_t divisor = 1193182 / 1000;
+    // Divisor has to be sent byte-wise, so split here into upper/lower bytes.
+    uint8_t l = (uint8_t)(divisor & 0xFF);
+    uint8_t h = (uint8_t)( (divisor>>8) & 0xFF );
+
+    // Send the frequency divisor.
+    outb(0x40, l);
+    outb(0x40, h);
+
+}
+
+
 static void pic_init() {
   /* Remap the irq table to [32,48) */
   outb(PIC1_CMD, PIC_INIT|PIC_ICW4);
@@ -385,7 +400,7 @@ static int init_idt() {
     ack_irq = &pic_ack_irq;
     enable_irq = &pic_enable_irq;
   }
-
+  init_pit();
 
   return 0;
 }
@@ -477,7 +492,7 @@ void syscall_handler(x86_regs_t* regs) {
 		address_space_t *new_space = kmalloc(sizeof(address_space_t));
 		memset(new_space,0,sizeof(address_space_t));
 
-		clone_address_space(new_space,1);
+		clone_address_space(new_space,0);
 		*tls_slot(TLS_SLOT_TCB, child->stack) = (uintptr_t)child;
 		if(setjmp(child->jmpbuf)==0) {
 			jmp_buf_set_cr3(child->jmpbuf, new_space->directory);

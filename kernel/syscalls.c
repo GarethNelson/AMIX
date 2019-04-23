@@ -19,6 +19,10 @@ int sys_debug_out_num(uintptr_t n) {
     return 0;
 }
 
+uint32_t sys_debug_out_str(char* s) {
+ 	kprintf("%s",s);
+}
+
 uint32_t sys_get_tid() {
     uint32_t tid = thread_current();
     return tid;
@@ -32,8 +36,8 @@ uint32_t sys_write_ringbuf(uint32_t dest_tid, char *s, uint32_t size) {
 
 uint32_t sys_read_ringbuf() {
 	char c;
-	int retval = char_ringbuf_read(&thread_current()->ringbuf,&c,1);
-	if(retval==0) return 0;
+	int retval;
+        while((retval = char_ringbuf_read(&thread_current()->ringbuf,&c,1))==0) thread_yield();
 	return (uint32_t)c;
 }
 
@@ -71,7 +75,7 @@ uint32_t sys_write(uint32_t fd, void* buf, uint32_t len) {
 }
 
 uint32_t sys_exit() {
-//	thread_wake(thread_current()->parent_task);
+	thread_wake(thread_current()->parent_task);
 	thread_kill(thread_current());
 	thread_yield();
 	return 0; // we should never reach here in theory
@@ -79,7 +83,7 @@ uint32_t sys_exit() {
 
 uint32_t sys_wait_tid(uint32_t tid) {
 	thread_t* other_task = (thread_t*)tid;
-	while(other_task->state != THREAD_DEAD) thread_yield();
+	while(other_task->state != THREAD_DEAD) thread_sleep();
 	thread_destroy(other_task);
 	return 0;
 }
@@ -96,12 +100,10 @@ void exec_proc(char* filename) {
 			uint64_t p = unmap(v,1);
 		}
 	}
-	kprintf("Unmapped old process!\n");
 	map(0x80020000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
 	map(0x80000000,alloc_pages(PAGE_REQ_NONE,1),1,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
 	
 	memcpy(0x80000000,&default_usercode,4096);
-	kprintf("Jumping to entry...\n");
 	void (*func_ptr)() = 0x80000000;
 
 	__asm__ volatile("  \ 
@@ -126,6 +128,7 @@ sti; \
 
 uint32_t sys_exec(char* filename) {
 	thread_exec(&exec_proc, filename);
+	return 0;
 }
 
 uintptr_t (*syscalls_table[SYSCALL_COUNT+1])(uintptr_t,uintptr_t,uintptr_t,uintptr_t) = {
