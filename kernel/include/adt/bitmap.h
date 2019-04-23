@@ -10,6 +10,7 @@
 typedef struct bitmap {
   uint8_t *data;
   int64_t max_extent;
+  int64_t first_set;
 } bitmap_t;
 
 

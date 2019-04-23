@@ -284,13 +284,23 @@ static int map_one_page(uintptr_t v, uint64_t p, unsigned flags) {
 /** Finally we have our ``map`` function to write, which simply iterates across all pages
     it needs to map and calls the ``map_one_page`` helper. { */
 
+static int fast_map(uintptr_t v, uint64_t p, unsigned flags) {
+  ensure_page_table_mapped(v);
+  *PAGE_TABLE_ENTRY(RPDT_BASE, v) = (p & 0xFFFFF000) |
+    to_x86_flags(flags) | X86_PRESENT;
+
+  return 0;
+}
+
 int map(uintptr_t v, uint64_t p, int num_pages, unsigned flags) {
-  for (int i = 0; i < num_pages; ++i) {
-    if (map_one_page(v+i*0x1000, p+i*0x1000, flags) == -1)
+  spinlock_acquire(&current->lock);
+      	for (int i = 0; i < num_pages; ++i) {
+    if (fast_map(v+i*0x1000, p+i*0x1000, flags) == -1)
       return -1;
     dbg("MAP DONE\n");
   }
   dbg("RET\n");
+  spinlock_release(&current->lock);
   return 0;
 }
 
@@ -485,15 +495,7 @@ int init_virtual_memory() {
 
 vmspace_t kernel_vmspace;
 
-static int fast_map(uintptr_t v, uint64_t p, unsigned flags) {
-//  spinlock_acquire(&current->lock);
 
-
-  *PAGE_TABLE_ENTRY(RPDT_BASE, v) = (p & 0xFFFFF000) |
-    to_x86_flags(flags) | X86_PRESENT;
-//  spinlock_release(&current->lock);
-  return 0;
-}
 
 static int fast_unmap(uintptr_t v) {
 
