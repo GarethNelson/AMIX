@@ -34,7 +34,6 @@ static char* readline(uint32_t fd, char* buf) {
 }
 
 void init0_main() {
-
 	my_tid = sys_get_tid();
 	print_str("My TID: "); sys_debug_out_num(my_tid); print_str("\n");
 

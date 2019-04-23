@@ -540,11 +540,12 @@ int clone_address_space(address_space_t *dest, int make_cow) {
 
   /* Iterate over all PDE's in the source directory except the last 
      two which are reserved for the page dir trick. */
-  for (uint32_t i = 0; i < MMAP_KERNEL_END; i += PAGE_TABLE_SIZE) {
+  for (uint32_t i = 0x0; i < MMAP_KERNEL_END; i += PAGE_TABLE_SIZE) {
     /** By default every page directory entry in the new address space is the same as in the old address space. */
+
     *PAGE_DIR_ENTRY(RPDT_BASE2, i) = *PAGE_DIR_ENTRY(RPDT_BASE, i);
 
-    int is_user = ! IS_KERNEL_ADDR(i);
+    int is_user = (*PAGE_DIR_ENTRY(RPDT_BASE, i) & X86_USER); //! IS_KERNEL_ADDR(i);
 
     /** However, if the directory entry is present and is user-mode, we need
         to clone it to ensure that updates in the old address space don't affect
