@@ -33,6 +33,8 @@
 #include "math.h"
 #include "adt/buddy.h"
 
+#pragma GCC optimize ("O3")
+
 /**
    Firstly, let's define some helper macros that manipulate tree node indices.
 

@@ -104,7 +104,7 @@ void exec_proc(char* filename) {
 	map(0x80020000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
 	map(0x80000000,alloc_pages(PAGE_REQ_NONE,1),1,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
 	
-	memcpy(0x80000000,&default_usercode,4096);
+	__builtin_memcpy(0x80000000,&default_usercode,4096);
 	void (*func_ptr)() = 0x80000000;
 
 	__asm__ volatile("  \ 
