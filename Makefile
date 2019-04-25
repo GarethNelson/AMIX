@@ -14,7 +14,7 @@ clean: kernel
 initrd.img:
 	$(TAR) --owner=0 --group=0 --numeric-owner --exclude-vcs --show-transformed-names -cvf ./initrd.img --transform 's,sysroot,,' sysroot/
 
-QEMU_CMD:=qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 2G -initrd "sysroot/boot/init0.elf,initrd.img"
+QEMU_CMD:=qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 2G -initrd "initrd.img,sysroot/boot/init0.elf"
 
 run-qemu: all
 	$(QEMU_CMD)
