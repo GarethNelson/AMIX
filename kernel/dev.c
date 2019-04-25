@@ -13,10 +13,18 @@ static block_device_callback callbacks[MAX_DEVS];
 static unsigned num_callbacks = 0;
 
 static const char *major_strs[] = {
-  "null",
-  "zero",
-  "hda", "hdb", "hdc", "hdd",
-  "sda", "sdb", "sdc", "sdd"
+  [0]  = "null",
+  [1]  = "zero",
+  [2]  = "hda", 
+  [3]  = "hdb",
+  [4]  = "hdc",
+  [5]  = "hdd",
+  [6]  = "sda",
+  [7]  = "sdb",
+  [8]  = "sdc",
+  [9]  = "sdd",
+  [10] = "console",
+  [11] = "initrd",
 };
 
 static void get_identifier_str(dev_t id, char *buf, unsigned bufsz) {

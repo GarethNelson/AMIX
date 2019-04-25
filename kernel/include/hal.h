@@ -549,6 +549,8 @@ typedef struct block_device {
 #define DEV_MAJ_SDB  7
 #define DEV_MAJ_SDC  8
 #define DEV_MAJ_SDD  9
+#define DEV_MAJ_CONSOLE 10
+#define DEV_MAJ_INITRD	11
 
 static inline unsigned minor(dev_t x) {
   return x & 0xFFFF;

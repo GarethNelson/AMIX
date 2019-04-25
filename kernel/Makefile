@@ -39,14 +39,12 @@ KERNEL_OBJS=\
 	directory_cache.o\
 	dummy.o\
 	early_pmm.o\
-	fs_vfat.o\
 	mock_initrd.o\
 	gcov.o\
 	hal.o\
 	kmalloc.o\
 	locking.o\
 	main.o\
-	partition.o\
 	pmm.o\
 	readline.o\
 	scheduler.o\
@@ -57,6 +55,7 @@ KERNEL_OBJS=\
 	string.o\
 	thread.o\
 	vfs.o\
+	dev_initrd.o\
 	vmspace.o\
 	syscalls.o\
 	elf.o\
