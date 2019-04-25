@@ -267,6 +267,28 @@ void hexDump(char *desc, void *addr, int len)
     kprintf("  %s\n", buff);
 }
 
+tar_header_t* tar_headers[64];
+size_t tar_entry_count=0;
+
+uintptr_t find_in_tar(char* filename) {
+	kprintf("Looking for %s in initrd...\n", filename);
+	for(int i=0; i<tar_entry_count; i++) {
+		kprintf("checking %s\n",tar_headers[i]->filename);
+		if(strcmp(filename,tar_headers[i]->filename)==0) {
+			kprintf("Found %s\n",filename);
+			return ((uintptr_t)tar_headers[i])+512;
+		}
+	}
+}
+
+size_t tar_file_size(char* filename) {
+	for(int i=0; i<tar_entry_count; i++) {
+		if(strcmp(filename,tar_headers[i]->filename)==0) {
+			return decodeTarOctal(tar_headers[i]->fileSize,12)-512;
+		}
+	}
+
+}
 
 void load_tar_file(char* image, size_t image_len) {
 	tar_header_t* header = (tar_header_t*)image;
@@ -275,6 +297,7 @@ void load_tar_file(char* image, size_t image_len) {
 	int i=0;
 	for(i=0; i<image_len; i++) {
 		header = (tar_header_t*)header_addr;
+		tar_headers[i] = header;
 		size_t header_size = decodeTarOctal(header->fileSize,12);
 		if(header->filename[0]=='\0') {
 			kprintf("\tEOF\n");
@@ -286,6 +309,7 @@ void load_tar_file(char* image, size_t image_len) {
 		if(header_size % 512) header_addr += 512;
 	}
 	kprintf("%d entries in TAR file\n",i);
+	tar_entry_count = i;
 }
 
 bool tar_check_file(char* img) {

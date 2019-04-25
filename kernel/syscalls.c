@@ -47,6 +47,7 @@ bool check_access(int mode) {
 }
 
 uint32_t sys_open(char* filename) {
+	if(strcmp(filename,"/dev/console")==0) filename="/a/b";
 	inode_t* inode = vfs_open(filename,&check_access);
         file_desc_t* fd = kmalloc(sizeof(file_desc_t));
         fd->inode = inode;
@@ -93,6 +94,9 @@ extern char* default_usercode;
 extern char* default_usercode_end;
 
 void exec_proc(char* filename) {
+	kprintf("EXEC %s\n",filename);
+	char* img=find_in_tar(filename);
+        size_t img_len = tar_file_size(filename);
 	// first let's scrap all user pages
 	for(uintptr_t v=0x10000; v<MMAP_KERNEL_START; v=iterate_mappings(v)) {
 		unsigned flags;
@@ -101,10 +105,12 @@ void exec_proc(char* filename) {
 			uint64_t p = unmap(v,1);
 		}
 	}
-	map(0x80020000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
-	map(0x80000000,alloc_pages(PAGE_REQ_NONE,1),1,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
-	
-	__builtin_memcpy(0x80000000,&default_usercode,4096);
+	kprintf("Need %d pages\n", img_len/4096);
+//	map(0x80020000,alloc_pages(PAGE_REQ_NONE,8),8,PAGE_USER|PAGE_WRITE);
+//	map(0x80000000,alloc_pages(PAGE_REQ_NONE,img_len/4096),img_len/4096,PAGE_USER|PAGE_WRITE|PAGE_EXECUTE);
+
+	load_elf_file(img,img_len);
+	__builtin_memcpy(0x80000000,img,img_len/4096);
 	void (*func_ptr)() = 0x80000000;
 
 	__asm__ volatile("  \ 
@@ -128,7 +134,7 @@ sti; \
 }
 
 uint32_t sys_exec(char* filename) {
-	thread_exec(&exec_proc, filename);
+	thread_exec(&exec_proc, filename,1);
 	return 0;
 }
 

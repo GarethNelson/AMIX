@@ -90,7 +90,7 @@ void init0_main() {
 	fork_ret = sys_fork();
 	if(fork_ret==0) {
 		print_str("Hello, i'm the child, i'm going to sys_exec and you should see the new process run\n");
-		sys_exec("Dummy");
+		sys_exec("/bin/sh");
 		print_str("You should not see this!\n");
 		for(;;);
 	} else {
@@ -99,14 +99,5 @@ void init0_main() {
 		print_str("Back in the parent!\n");
 	}
 
-	print_str("Testing wait\n");
-	fork_ret = sys_fork();
-	if(fork_ret==0) {
-		print_str("Hello, i'm the child, i'm going to loop forever now\n");
-		for(;;);
-	} else {
-		print_str("Waiting on child, this should not return, goodbye!\n");
-		sys_wait_tid(fork_ret);
-	}
 }
 
