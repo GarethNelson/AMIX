@@ -44,6 +44,26 @@ static int free_memory() {
   extern int __start, __end;
   uintptr_t end = (((uintptr_t)&__end) & ~get_page_mask()) + get_page_size();
 
+if (mboot.flags & MBOOT_MODULES) {
+
+
+	  kprintf ("mods_count = %d, mods_addr = 0x%x\n",
+                   (int) mboot.mods_count, (int) mboot.mods_addr);
+	  multiboot_module_entry_t *mod;
+	   for (i = 0, mod = (multiboot_module_entry_t *) mboot.mods_addr;
+                i < mboot.mods_count;
+                i++, mod++) {
+             kprintf (" mod_start = 0x%x, mod_end = 0x%x, cmdline = %s\n",
+                     (unsigned) mod->mod_start,
+                     (unsigned) mod->mod_end,
+                     (char *) mod->string);
+	     		if(mod->mod_end > end) {
+
+				end = (((uintptr_t)mod->mod_end) & ~get_page_mask()) + get_page_size();
+			}
+	   }
+  }
+
   for (i = 0; i < n; ++i)
     remove_range(&ranges[i], (uintptr_t)&__start, end);
 

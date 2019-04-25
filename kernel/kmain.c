@@ -24,7 +24,9 @@ kprintf("init0: %s\n",mod->string);
 
 	if(!elf_check_file(init0_img)) {
 		kprintf("Bad ELF file!\n");
-		for(;;);
+		thread_kill(thread_current());
+		thread_yield();
+		return;
 	}
 
      Elf32_Ehdr* elf_header = (Elf32_Ehdr*)init0_img;
@@ -80,7 +82,6 @@ __asm__ volatile("  \
      ": : "b"(func_ptr));
 
 //     func_ptr();
-     for(;;);
 }
 
 extern multiboot_t mboot;
