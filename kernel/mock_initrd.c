@@ -159,11 +159,26 @@ int dget_root(filesystem_t *fs, inode_t *inode) {
   return 0;
 }
 
+int dmknod(filesystem_t *fs, inode_t* dir_ino, inode_t* dest_ino, const char *name) {
+    vector_t* v = dir_ino->data;
+    dirent_t de;
+    de.name = name;
+    de.ino = dest_ino;
+    vector_add(v,&de);
+    dest_ino->data = kmalloc(sizeof(vector_t));
+    vector_t* new_v = dest_ino->data;
+    new_v->itemsz = sizeof(dirent_t);
+    new_v->nitems = 0;
+    new_v->data   = 0;
+    new_v->sz     = 0;
+    return 0;
+}
+
 filesystem_t dummyfs = {
   .read = &dread,
   .write = &dwrite,
   .readdir = &dreaddir,
-  .mknod = NULL,
+  .mknod = &dmknod,
   .get_root = &dget_root,
   .destroy = NULL
 };

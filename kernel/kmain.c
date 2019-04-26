@@ -290,6 +290,45 @@ size_t tar_file_size(char* filename) {
 
 }
 
+bool dummy_access(int mode) {
+  return true;
+}
+
+void strncpy( char* _dst, const char* _src, size_t _n )
+{
+   size_t i = 0;
+   while(i++ != _n && (*_dst++ = *_src++));
+}
+
+void mkdir(char* name) {
+  inode_t *ino = vfs_open(name, &dummy_access);
+
+  assert(!ino && "Directory exists!");
+    
+  /* Find parent. */
+  char *str = NULL;
+  int i;
+  for (i = strlen(name); i >= 0; --i) {
+    if (name[i] == '/') {
+      str = kmalloc(i+1);
+      strncpy(str, name, i);
+      str[i] = '\0';
+      break;
+    }
+  }
+  assert(str && "Parent directory not found!");
+
+  ino = vfs_open(str, &dummy_access);
+  assert(ino && "Parent directory not found!");
+
+  vfs_mknod(ino, &name[i+1], it_dir, 0777, 0, 0);
+
+  ino = vfs_open(name, &dummy_access);
+  assert(ino && "Directory not found after having created it!");
+  
+  vfs_close(ino);
+}
+
 void load_tar_file(char* image, size_t image_len) {
 	tar_header_t* header = (tar_header_t*)image;
 	uintptr_t header_addr = (uintptr_t)image;
@@ -310,6 +349,19 @@ void load_tar_file(char* image, size_t image_len) {
 	}
 	kprintf("%d entries in TAR file\n",i);
 	tar_entry_count = i;
+for(int i=1; i<tar_entry_count; i++) {
+	if(tar_headers[i]->typeFlag==TAR_TYPE_DIRECTORY) { 
+		char buf[1024];
+		ksnprintf(buf,strlen(tar_headers[i]->filename),"%s",tar_headers[i]->filename);
+		mkdir(buf);
+	} else {
+		
+	}
+}
+  vector_t done = vector_new(sizeof(inode_t*), 16);
+  emit_tree("", vfs_get_root(), 0, &done);
+
+
 }
 
 bool tar_check_file(char* img) {
