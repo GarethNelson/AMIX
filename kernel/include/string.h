@@ -22,6 +22,7 @@ char *strcpy(char *dest, const char *src);
 
 char *strcat(char *dest, const char *src);
 char *strchr(const char *s, int c);
+char *strrchr(const char *s, int c);
 
 #endif /* defined(HOSTED) */
 

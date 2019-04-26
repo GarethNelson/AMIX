@@ -115,4 +115,14 @@ char *strchr(const char *s, int c) {
   return NULL;
 }
 
+char *strrchr(const char *s, int c)
+{
+    char* ret=0;
+    do {
+        if( *s == (char)c )
+            ret=s;
+    } while(*s++);
+    return ret;
+}
+
 #endif /* !defined(HOSTED) */

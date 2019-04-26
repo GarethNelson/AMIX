@@ -23,7 +23,7 @@ initrd.img:
 	mkdir initrd/bin
 	cp bin/sh/sh initrd/bin/
 	cp bin/ls/ls initrd/bin/
-	$(TAR) --owner=0 --group=0 --numeric-owner --exclude-vcs --show-transformed-names -cvf ./initrd.img --transform 's,initrd,,' initrd/
+	$(TAR) -P --owner=0 --group=0 --numeric-owner --exclude-vcs --show-transformed-names -cvf ./initrd.img --transform 's,initrd,,' initrd/
 
 QEMU_CMD:=qemu-system-i386 -kernel sysroot/boot/kernel.bin -serial mon:stdio -m 2G -initrd "initrd.img /,sysroot/boot/init0.elf"
 

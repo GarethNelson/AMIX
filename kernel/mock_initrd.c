@@ -26,7 +26,7 @@ exit `$1 $2 | ./test/FileCheck $0`
 
 enum {
   n_root, n_a, n_b, n_c, n_d, n_e, n_f, n_g, n_h, n_i, n_j, n_END
-} node_num;
+ } node_num;
 
 typedef struct dummyfs {
   inode_t nodes[n_END];
@@ -69,21 +69,20 @@ vector_t dreaddir(filesystem_t *fs, inode_t *dir) {
   vector_t v = vector_new(sizeof(dirent_t), 4);
   dirent_t de;
 
+
+
 #define ADD(x) de.name = #x; de.ino = &dfs->nodes[n_##x]; vector_add(&v, &de)
-  if (dir == dfs->root_inode) {
-    ADD(a);
-    ADD(f);
-  } else if (dir == &dfs->nodes[n_a]) {
-    ADD(b);
-    ADD(c);
-    ADD(e);
-  } else if (dir == &dfs->nodes[n_c]) {
+  if (dir == &dfs->nodes[n_c]) {
     ADD(d);
   } else if (dir == &dfs->nodes[n_f]) {
     ADD(g);
     ADD(h);
     ADD(i);
     ADD(j);
+  } else {
+
+    vector_t* inode_children = (vector_t*)dir->data;
+    return *inode_children;
   }
 
   return v;
@@ -141,7 +140,22 @@ int64_t dwrite(filesystem_t *fs, inode_t *inode, uint64_t offset, void *buf, uin
 
 int dget_root(filesystem_t *fs, inode_t *inode) {
   dummyfs_t *dfs = fs->data;
-  dfs->root_inode = inode;
+  inode->data = kmalloc(sizeof(vector_t));
+  vector_t* v = (vector_t*)inode->data;
+  
+  dirent_t de;
+  v->itemsz = sizeof(dirent_t);
+  v->nitems = 0;
+  v->data   = 0;
+  v->sz     = 0;
+
+  #define ADD(x) de.name = #x; de.ino = &dfs->nodes[n_##x]; vector_add(v, &de)
+
+  ADD(a);
+  ADD(f);
+
+  inode->data=v;
+
   return 0;
 }
 
@@ -160,11 +174,45 @@ int dprobe(dev_t dev, filesystem_t *fs) {
   dummyfs_t *dfs = kmalloc(sizeof(dummyfs_t));
 
   memset(dfs->nodes, 0, sizeof(inode_t) * n_END);
-  dfs->nodes[n_a].type = it_dir;
-  dfs->nodes[n_c].type = it_dir;
-  dfs->nodes[n_f].type = it_dir;
 
-//  dfs->nodes[n_b].type = it_file; dfs->nodes[n_b].size = strlen(datas[n_b]);
+  dirent_t de;
+  vector_t* v;
+  #define ADD(x) de.name = #x; de.ino = &dfs->nodes[n_##x]; vector_add(v, &de)
+
+  dfs->nodes[n_a].type = it_dir;
+  dfs->nodes[n_a].data = kmalloc(sizeof(vector_t));
+  ((vector_t*)dfs->nodes[n_a].data)->itemsz = sizeof(dirent_t);
+  ((vector_t*)dfs->nodes[n_a].data)->nitems = 0;
+  ((vector_t*)dfs->nodes[n_a].data)->data   = 0;
+  ((vector_t*)dfs->nodes[n_a].data)->sz     = 0;
+  v = dfs->nodes[n_a].data;
+  ADD(b);
+  ADD(c);
+  ADD(e);
+
+  dfs->nodes[n_c].type = it_dir;
+  dfs->nodes[n_c].data = kmalloc(sizeof(vector_t));
+  ((vector_t*)dfs->nodes[n_c].data)->itemsz = sizeof(dirent_t);
+  ((vector_t*)dfs->nodes[n_c].data)->nitems = 0;
+  ((vector_t*)dfs->nodes[n_c].data)->data   = 0;
+  ((vector_t*)dfs->nodes[n_c].data)->sz     = 0;
+  v = dfs->nodes[n_c].data;
+  ADD(d);
+
+  dfs->nodes[n_f].type = it_dir;
+  dfs->nodes[n_f].data = kmalloc(sizeof(vector_t));
+  ((vector_t*)dfs->nodes[n_f].data)->itemsz = sizeof(dirent_t);
+  ((vector_t*)dfs->nodes[n_f].data)->nitems = 0;
+  ((vector_t*)dfs->nodes[n_f].data)->data   = 0;
+  ((vector_t*)dfs->nodes[n_f].data)->sz     = 0;
+  v = dfs->nodes[n_f].data;
+  ADD(g);
+  ADD(h);
+  ADD(i);
+  ADD(j);
+
+
+
   dfs->nodes[n_b].type = it_chardev;
   dfs->nodes[n_d].type = it_file; dfs->nodes[n_d].size = strlen(datas[n_d]);
   dfs->nodes[n_e].type = it_file; dfs->nodes[n_e].size = strlen(datas[n_e]);
