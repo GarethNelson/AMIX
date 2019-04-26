@@ -41,7 +41,7 @@ void load_elf_file(char* image, size_t image_len) {
      address_space_t *new_space = kmalloc(sizeof(address_space_t));
      memset(new_space,0,sizeof(address_space_t));
 
-     clone_address_space(new_space,1);
+     clone_address_space(new_space,0);
      kprintf("Setting up new vspace at %p\n",new_space->directory);
 
      switch_address_space(new_space);

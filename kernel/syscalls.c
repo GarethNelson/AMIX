@@ -60,10 +60,19 @@ uint32_t sys_open(char* filename) {
 uint32_t sys_read(uint32_t fd, void* buf, uint32_t len) {
         file_desc_t* file_desc = vector_get(&thread_current()->fds,fd);
 	inode_t* inode = file_desc->inode;
-	uint64_t size = (uint64_t)size;
-	uint32_t retval = (uint32_t)vfs_read(inode,file_desc->offs,buf,len);
-	file_desc->offs += retval;
-	return retval;
+	uint64_t size = (uint64_t)len;
+	if(inode->type == it_dir) {
+		vector_t dir_ents = vfs_readdir(inode);
+		if(file_desc->offs >= vector_length(&dir_ents)) return 0;
+		dirent_t* dir_ino = vector_get(&dir_ents,file_desc->offs);
+		ksnprintf(buf,len,"%s",dir_ino->name);
+		file_desc->offs++;
+		return len;
+	} else {
+		uint32_t retval = (uint32_t)vfs_read(inode,file_desc->offs,buf,len);
+		file_desc->offs += retval;
+		return retval;
+	}
 }
 
 
