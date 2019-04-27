@@ -159,6 +159,6 @@ inode_t *vfs_get_root();
 int vfs_mknod(inode_t *parent,
               const char *name,
               inode_type_t type,
-              int mode, int uid, int gid);
+              int mode, int uid, int gid, dev_t dev);
 
 #endif /* VFS_H */

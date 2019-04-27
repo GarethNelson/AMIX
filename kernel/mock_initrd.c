@@ -69,73 +69,36 @@ vector_t dreaddir(filesystem_t *fs, inode_t *dir) {
   vector_t v = vector_new(sizeof(dirent_t), 4);
   dirent_t de;
 
-
-
-#define ADD(x) de.name = #x; de.ino = &dfs->nodes[n_##x]; vector_add(&v, &de)
-  if (dir == &dfs->nodes[n_c]) {
-    ADD(d);
-  } else if (dir == &dfs->nodes[n_f]) {
-    ADD(g);
-    ADD(h);
-    ADD(i);
-    ADD(j);
-  } else {
-
-    vector_t* inode_children = (vector_t*)dir->data;
-    return *inode_children;
-  }
-
-  return v;
-#undef ADD
+  vector_t* inode_children = (vector_t*)dir->data;
+  return *inode_children;
+ 
 }
 
 int64_t dread(filesystem_t *fs, inode_t *inode, uint64_t offset, void *buf, uint64_t sz) {
-  dummyfs_t *dfs = fs->data;
-  if(inode->type == it_chardev) {
-	return read_console(buf, (int)sz);
-  }
-  int num = num_for_inode(dfs, inode);
-  switch (num) {
-  default: assert(0 && "Not a file!");
-  case n_b:
-  case n_d:
-  case n_e:
-  case n_g:
-  case n_h:
-  case n_i:
-  case n_j:
-    assert(offset <= (unsigned)strlen(datas[num]));
-    if (offset + sz >= (unsigned)strlen(datas[num])) {
-      sz = (unsigned)strlen(datas[num]) - offset;
-    }
-    memcpy(buf, datas[num] + offset, sz);
-    return sz;
-  }
+	memcpy(buf,inode->data+offset,sz);
+	if(inode->type == it_chardev) {
+		return read_console(buf, (int)sz);
+	}
+	return sz;
 }
 
 int64_t dwrite(filesystem_t *fs, inode_t *inode, uint64_t offset, void *buf, uint64_t sz) {
   dummyfs_t *dfs = fs->data;
   if(inode->type == it_chardev) {
-	write_console(buf, (int)sz);
+        write_console(buf, (int)sz);
 	return sz;
   }
-  int num = num_for_inode(dfs, inode);
-  switch (num) {
-  default: assert(0 && "Not a file!");
-  case n_b:
-  case n_d:
-  case n_e:
-  case n_g:
-  case n_h:
-  case n_i:
-  case n_j:
-    assert(offset <= (unsigned)strlen(datas[num]));
-    if (offset + sz >= (unsigned)strlen(datas[num])) {
-      sz = strlen(datas[num]) - offset;
-    }
-    memcpy(datas[num] + offset, buf, sz);
-    return sz;
+ 
+
+  int new_size = inode->size-offset + sz;
+  if(new_size > inode->size) {
+	 void* new_data=kmalloc(new_size);
+	 __builtin_memcpy(new_data, inode->data, inode->size);
+	 inode->data=new_data;
   }
+  memcpy(inode->data + offset, buf, sz);
+  inode->size = new_size;
+  return sz;
 }
 
 int dget_root(filesystem_t *fs, inode_t *inode) {
@@ -149,10 +112,7 @@ int dget_root(filesystem_t *fs, inode_t *inode) {
   v->data   = 0;
   v->sz     = 0;
 
-  #define ADD(x) de.name = #x; de.ino = &dfs->nodes[n_##x]; vector_add(v, &de)
 
-  ADD(a);
-  ADD(f);
 
   inode->data=v;
 
@@ -186,59 +146,7 @@ filesystem_t dummyfs = {
 int dprobe(dev_t dev, filesystem_t *fs) {
   memcpy(fs, &dummyfs, sizeof(filesystem_t));
 
-  dummyfs_t *dfs = kmalloc(sizeof(dummyfs_t));
-
-  memset(dfs->nodes, 0, sizeof(inode_t) * n_END);
-
-  dirent_t de;
-  vector_t* v;
-  #define ADD(x) de.name = #x; de.ino = &dfs->nodes[n_##x]; vector_add(v, &de)
-
-  dfs->nodes[n_a].type = it_dir;
-  dfs->nodes[n_a].data = kmalloc(sizeof(vector_t));
-  ((vector_t*)dfs->nodes[n_a].data)->itemsz = sizeof(dirent_t);
-  ((vector_t*)dfs->nodes[n_a].data)->nitems = 0;
-  ((vector_t*)dfs->nodes[n_a].data)->data   = 0;
-  ((vector_t*)dfs->nodes[n_a].data)->sz     = 0;
-  v = dfs->nodes[n_a].data;
-  ADD(b);
-  ADD(c);
-  ADD(e);
-
-  dfs->nodes[n_c].type = it_dir;
-  dfs->nodes[n_c].data = kmalloc(sizeof(vector_t));
-  ((vector_t*)dfs->nodes[n_c].data)->itemsz = sizeof(dirent_t);
-  ((vector_t*)dfs->nodes[n_c].data)->nitems = 0;
-  ((vector_t*)dfs->nodes[n_c].data)->data   = 0;
-  ((vector_t*)dfs->nodes[n_c].data)->sz     = 0;
-  v = dfs->nodes[n_c].data;
-  ADD(d);
-
-  dfs->nodes[n_f].type = it_dir;
-  dfs->nodes[n_f].data = kmalloc(sizeof(vector_t));
-  ((vector_t*)dfs->nodes[n_f].data)->itemsz = sizeof(dirent_t);
-  ((vector_t*)dfs->nodes[n_f].data)->nitems = 0;
-  ((vector_t*)dfs->nodes[n_f].data)->data   = 0;
-  ((vector_t*)dfs->nodes[n_f].data)->sz     = 0;
-  v = dfs->nodes[n_f].data;
-  ADD(g);
-  ADD(h);
-  ADD(i);
-  ADD(j);
-
-
-
-  dfs->nodes[n_b].type = it_chardev;
-  dfs->nodes[n_d].type = it_file; dfs->nodes[n_d].size = strlen(datas[n_d]);
-  dfs->nodes[n_e].type = it_file; dfs->nodes[n_e].size = strlen(datas[n_e]);
-  dfs->nodes[n_g].type = it_file; dfs->nodes[n_g].size = strlen(datas[n_g]);
-
-  dfs->nodes[n_h].type = it_symlink; dfs->nodes[n_h].size = strlen(datas[n_h]);
-  dfs->nodes[n_i].type = it_symlink; dfs->nodes[n_i].size = strlen(datas[n_i]);
-  dfs->nodes[n_j].type = it_symlink; dfs->nodes[n_j].size = strlen(datas[n_j]);
-
-  fs->data = dfs;
-
+ 
   return 0;
 }
 
@@ -255,8 +163,8 @@ void emit_tree(const char *name, inode_t *ino, int indent, vector_t *done) {
   vector_add(done, &ino);
 
   emit_indent(indent);
-  if(ino->type == it_chardev) {
-	  kprintf("'%s' DEV\n");
+  if(ino->type == it_chardev || ino->type == it_blockdev) {
+	  kprintf("'%s' DEV %d %d\n", name, major(ino->u.dev),minor(ino->u.dev));
   } else {	  
 	  kprintf("'%s' %s (size %d)\n", name,
         	  ((ino->type == it_dir) ? "DIR" : ""),
@@ -276,13 +184,6 @@ bool daccess(int mode) {
 }
 
 int init_mock_initrd() {
-  // Ensure data is writable.
-  for (int i = 0; i < n_END; ++i) {
-    const char *di = datas[i];
-    datas[i] = kmalloc(strlen(di) + 1);
-    memcpy(datas[i], di, strlen(di) + 1);
-  }
-
   // Check mounting
   // ----------------------------------------------------------------------
 
@@ -294,133 +195,6 @@ int init_mock_initrd() {
   kprintf("mount = %d\n",
           vfs_mount(makedev(DEV_MAJ_NULL, 0), vfs_get_root(), "dummyfs"));
 
-  dummyfs_t *dfs = vfs_get_root()->mountpoint->fs.data;
-
-  // CHECK: '' DIR
-  // CHECK:   'a' DIR
-  // CHECK:     'b'  (size 31)
-  // CHECK:     'c' DIR
-  // CHECK:       'd' (size 35)
-  // CHECK:     'e' (size 16)
-  // CHECK:   'f' DIR
-  // CHECK:     'g' (size 20)
-  // CHECK:     'h'  (size 1)
-  // CHECK:     'i'  (size 4)
-  vector_t done = vector_new(sizeof(inode_t*), 16);
-  emit_tree("", vfs_get_root(), 0, &done);
-  
-  // Check basic reading/writing
-  // ----------------------------------------------------------------------
-
-  // CHECK: read = 20
-  // CHECK: str = You shall not pass!
-  char str[256];
-  kprintf("read = %d\n",
-          (int)vfs_read(&dfs->nodes[n_g], 0, str, 255));
-  kprintf("str = %s\n", str);
-
-  // CHECK: write = 10
-  kprintf("write = %d\n",
-          (int)vfs_write(&dfs->nodes[n_d], 6, "ragonheart", 10));
-  // CHECK: read = 35
-  // CHECK: str = I am dragonheart, first of my name
-  kprintf("read = %d\n",
-          (int)vfs_read(&dfs->nodes[n_d], 0, str, 255));
-  kprintf("str = %s\n", str);
-
-  // Check mounting subdirectories
-  // ----------------------------------------------------------------------
-
-  // Ensure we can't mount over a current mountpoint. check for EBUSY
-  // CHECK: mount = 1
-  // CHECK: errno = 16, EBUSY = 16
-  kprintf("mount = %d\n",
-          vfs_mount(makedev(DEV_MAJ_NULL, 0), vfs_get_root(), "dummyfs"));
-  kprintf("errno = %d, EBUSY = %d\n", get_errno(), EBUSY);
-
-  // Device should be already mounted!
-  // CHECK: mount = 1
-  // CHECK: errno = 16, EBUSY = 16
-  kprintf("mount = %d\n",
-          vfs_mount(makedev(DEV_MAJ_NULL, 0), &dfs->nodes[n_c], "dummyfs"));
-  kprintf("errno = %d, EBUSY = %d\n", get_errno(), EBUSY);
-
-  // CHECK: mount = 0
-  kprintf("mount = %d\n",
-          vfs_mount(makedev(DEV_MAJ_NULL, 1), &dfs->nodes[n_c], "dummyfs"));
-
-  // Check mounting in a subdirectory.
-  // CHECK: '' DIR
-  // CHECK:   'a' DIR (size 0)
-  // CHECK:     'b'  (size 31)
-  // CHECK:     'c' DIR (size 0)
-  // CHECK:       'a' DIR (size 0)
-  // CHECK:         'b'  (size 31)
-  // CHECK:         'c' DIR (size 0)
-  // CHECK:           'd'  (size 35)
-  // CHECK:         'e'  (size 16)
-  // CHECK:       'f' DIR (size 0)
-  // CHECK:         'g'  (size 20)
-  // CHECK:         'h'  (size 1)
-  // CHECK:         'i'  (size 4)
-  // CHECK:     'e'  (size 16)
-  // CHECK:   'f' DIR (size 0)
-  // CHECK:     'g'  (size 20)
-  // CHECK:     'h'  (size 1)
-  // CHECK:     'i'  (size 4)
-  vector_destroy(&done);
-  done = vector_new(sizeof(inode_t*), 16);
-  emit_tree("", vfs_get_root(), 0, &done);
-
-  // Check unmounting.
-  // ----------------------------------------------------------------------
-  // CHECK: umount = 0
-  // CHECK: '' DIR
-  // CHECK:   'a' DIR (size 0)
-  // CHECK:     'b'  (size 31)
-  // CHECK:     'c' DIR (size 0)
-  // CHECK:       'd'  (size 35)
-  // CHECK:     'e'  (size 16)
-  // CHECK:   'f' DIR (size 0)
-  // CHECK:     'g'  (size 20)
-  // CHECK:     'h'  (size 1)
-  // CHECK:     'i'  (size 4)
-  kprintf("umount = %d\n",
-          vfs_umount(makedev(DEV_MAJ_NULL, 1), NULL));
-  vector_destroy(&done);
-  done = vector_new(sizeof(inode_t*), 16);
-  emit_tree("", vfs_get_root(), 0, &done);
-
-  // Check open()
-  // ----------------------------------------------------------------------
-  // CHECK: open() = {{[^0][0-9a-f]+}}
-  kprintf("open() = %x\n", vfs_open("/a", &daccess));
-  // CHECK: open() = 0
-  kprintf("open() = %x\n", vfs_open("/azfg", &daccess));
-  // CHECK: open() = {{[^0][0-9a-f]+}}
-  kprintf("open() = %x\n", vfs_open("/a/b", &daccess));
-  // CHECK: open() = 0
-  // CHECK: errno = 2, ENOENT = 2
-  kprintf("open() = %x\n", vfs_open("/a/f/g", &daccess));
-  kprintf("errno = %d, ENOENT = %d\n", get_errno(), ENOENT);
-
-  // CHECK: open() = {{[^0][0-9a-f]+}}
-  kprintf("open() = %x\n", vfs_open("/a/c/d", &daccess));
-
-  // CHECK: open(/f/g) = [[g:[0-9a-f]+]]
-  // CHECK: open(/f/h) = [[g]]
-  kprintf("open(/f/g) = %x\n", vfs_open("/f/g", &daccess));
-  kprintf("open(/f/h) = %x\n", vfs_open("/f/h", &daccess));
-
-  // CHECK: open(/a/b) = [[b:[0-9a-f]+]]
-  // CHECK: open(/f/i) = [[b]]
-  kprintf("open(/a/b) = %x\n", vfs_open("/a/b", &daccess));
-  kprintf("open(/f/i) = %x\n", vfs_open("/f/i", &daccess));
-
-  // Check transitive link handling (/f/j -> /f/h -> /f/g)
-  // CHECK: open(/f/j) = [[g]]
-  kprintf("open(/f/j) = %x\n", vfs_open("/f/j", &daccess));
-  
 
   return 0;
 }

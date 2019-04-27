@@ -37,7 +37,10 @@ void init0_main() {
 	my_tid = sys_get_tid();
 	print_str("My TID: "); sys_debug_out_num(my_tid); print_str("\n");
 
+	char buf[1024];
+	uint32_t fd;
 	uint32_t fork_ret = sys_fork();
+	sys_debug_out_num(fork_ret);
 	if(fork_ret==0) {
 		print_str("This is the child talking using normal sys_debug_out\n");
 		for(;;) {
@@ -48,15 +51,15 @@ void init0_main() {
 	}
 
 	print_str("Testing VFS stuff...\n");
-	uint32_t fd = sys_open("/a/b");
+	fd = sys_open("/dev/console");
 
-	print_str("Opened /a/b with fd: "); sys_debug_out_num(fd); print_str("\n");
+	print_str("Opened /dev/console with fd: "); sys_debug_out_num(fd); print_str("\n");
 
 	char* s="This is a string written to the FD\n";
 	sys_write(fd,s,__builtin_strlen(s));
+	for(;;);
+/*
 
-
-	char buf[1024];
 	print_str("Type something> ");
 	char* line = readline(fd,buf);
 	print_str("You typed: "); print_str(buf); putchar('\n');
@@ -65,14 +68,14 @@ void init0_main() {
 
        	char* test_str="This is a message sent from parent to child\n";
 	sys_write_ringbuf(fork_ret,test_str,__builtin_strlen(test_str));
-
+*/
 	print_str("Testing normal file reading:\n");
-	fd = sys_open("/a/c/d");
-	print_str("Opened /a/c/d with fd: "); sys_debug_out_num(fd); print_str("\n");
+	fd = sys_open("/test.txt");
+	print_str("Opened /test.txt with fd: "); sys_debug_out_num(fd); print_str("\n");
 
 	uint32_t len=sys_read(fd,buf,35);
-	print_str("Contents of /a/c/d: "); print_str(buf);
-	
+	print_str("Contents of /test.txt: "); print_str(buf);
+/*	
 	print_str("Testing exit\n");
 	fork_ret = sys_fork();
 	if(fork_ret==0) {
@@ -97,7 +100,7 @@ void init0_main() {
 		print_str("Waiting on child...\n");
 		sys_wait_tid(fork_ret);
 		print_str("Back in the parent!\n");
-	}
+	}*/
 
 }
 

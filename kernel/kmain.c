@@ -41,7 +41,7 @@ void load_elf_file(char* image, size_t image_len) {
      address_space_t *new_space = kmalloc(sizeof(address_space_t));
      memset(new_space,0,sizeof(address_space_t));
 
-     clone_address_space(new_space,0);
+     clone_address_space(new_space,1);
      kprintf("Setting up new vspace at %p\n",new_space->directory);
 
      switch_address_space(new_space);
@@ -300,6 +300,20 @@ void strncpy( char* _dst, const char* _src, size_t _n )
    while(i++ != _n && (*_dst++ = *_src++));
 }
 
+char* get_parent(char* name) {
+  /* Find parent. */
+  char *str = NULL;
+  int i;
+  for (i = strlen(name); i >= 0; --i) {
+    if (name[i] == '/') {
+      str = kmalloc(i+1);
+      strncpy(str, name, i);
+      str[i] = '\0';
+      break;
+    }
+  }
+}
+
 void mkdir(char* name) {
   inode_t *ino = vfs_open(name, &dummy_access);
 
@@ -321,13 +335,68 @@ void mkdir(char* name) {
   ino = vfs_open(str, &dummy_access);
   assert(ino && "Parent directory not found!");
 
-  vfs_mknod(ino, &name[i+1], it_dir, 0777, 0, 0);
+  vfs_mknod(ino, &name[i+1], it_dir, 0777, 0, 0, makedev(0,0));
 
   ino = vfs_open(name, &dummy_access);
   assert(ino && "Directory not found after having created it!");
   
   vfs_close(ino);
 }
+
+void create_file(char* name, char* data, size_t len, uint32_t mode) {
+char *str = NULL;
+    int i;
+    for (i = strlen(name); i >= 0; --i) {
+      if (name[i] == '/') {
+        str = kmalloc(i+1);
+        strncpy(str, name, i);
+        str[i] = '\0';
+        break;
+      }
+    }
+	kprintf("%s\n",str);
+    inode_t* ino = vfs_open(str, &dummy_access);
+	vfs_mknod(ino,&name[i+1], it_file, mode, 0, 0, makedev(0,0));
+	vfs_close(ino);
+	ino = vfs_open(name, &dummy_access);
+	vfs_write(ino, 0, data, len);
+	vfs_close(ino);
+}
+
+void create_char_dev(char* name, uint32_t mode, dev_t dev) {
+char *str = NULL;
+    int i;
+    for (i = strlen(name); i >= 0; --i) {
+      if (name[i] == '/') {
+        str = kmalloc(i+1);
+        strncpy(str, name, i);
+        str[i] = '\0';
+        break;
+      }
+    }
+	kprintf("%s\n",str);
+    inode_t* ino = vfs_open(str, &dummy_access);
+	vfs_mknod(ino,&name[i+1], it_chardev, mode, 0, 0, dev);
+	vfs_close(ino);
+}
+
+void create_block_dev(char* name, uint32_t mode, dev_t dev) {
+char *str = NULL;
+    int i;
+    for (i = strlen(name); i >= 0; --i) {
+      if (name[i] == '/') {
+        str = kmalloc(i+1);
+        strncpy(str, name, i);
+        str[i] = '\0';
+        break;
+      }
+    }
+	kprintf("%s\n",str);
+    inode_t* ino = vfs_open(str, &dummy_access);
+	vfs_mknod(ino,&name[i+1], it_blockdev, mode, 0, 0, dev);
+	vfs_close(ino);
+}
+
 
 void load_tar_file(char* image, size_t image_len) {
 	tar_header_t* header = (tar_header_t*)image;
@@ -355,7 +424,15 @@ for(int i=1; i<tar_entry_count; i++) {
 		ksnprintf(buf,strlen(tar_headers[i]->filename),"%s",tar_headers[i]->filename);
 		mkdir(buf);
 	} else {
-		
+		if(tar_headers[i]->typeFlag==TAR_TYPE_NORMAL_FILE) {
+			create_file(tar_headers[i]->filename,(void*)(tar_headers[i])+512, decodeTarOctal(tar_headers[i]->fileSize,12), decodeTarOctal(tar_headers[i]->mode,8));
+		} else if(tar_headers[i]->typeFlag==TAR_TYPE_CHAR_DEV) {
+			create_char_dev(tar_headers[i]->filename,decodeTarOctal(tar_headers[i]->mode,8),makedev(decodeTarOctal(tar_headers[i]->deviceMajorNumber,8),
+					       									 decodeTarOctal(tar_headers[i]->deviceMinorNumber,8)));
+		} else if(tar_headers[i]->typeFlag==TAR_TYPE_BLOCK_DEV) {
+			create_block_dev(tar_headers[i]->filename,decodeTarOctal(tar_headers[i]->mode,8),makedev(decodeTarOctal(tar_headers[i]->deviceMajorNumber,8),
+					       									 decodeTarOctal(tar_headers[i]->deviceMinorNumber,8)));
+		}
 	}
 }
   vector_t done = vector_new(sizeof(inode_t*), 16);

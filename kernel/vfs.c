@@ -339,7 +339,7 @@ void vfs_close(inode_t *node) {
 int vfs_mknod(inode_t *parent,
               const char *name,
               inode_type_t type,
-              int mode, int uid, int gid) {
+              int mode, int uid, int gid, dev_t dev) {
   dbg("mknod('%s', type=%d, mode=%d, uid=%d, gid=%d)\n",
       name, type, mode, uid, gid);
 
@@ -355,7 +355,11 @@ int vfs_mknod(inode_t *parent,
   ino->gid = gid;
   ino->size = 0;
   ino->handles = 0;
-  ino->u.dir_cache = 0;
+  if(type==it_chardev || type==it_blockdev) {
+	  ino->u.dev=dev;
+  } else {	  
+	  ino->u.dir_cache = 0;
+  }
   rwlock_init(&ino->rwlock);
 
   int ret = parent->mountpoint->fs.mknod(&parent->mountpoint->fs,

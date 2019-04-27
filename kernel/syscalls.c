@@ -47,7 +47,6 @@ bool check_access(int mode) {
 }
 
 uint32_t sys_open(char* filename) {
-	if(strcmp(filename,"/dev/console")==0) filename="/a/b";
 	inode_t* inode = vfs_open(filename,&check_access);
         file_desc_t* fd = kmalloc(sizeof(file_desc_t));
         fd->inode = inode;
