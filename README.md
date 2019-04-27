@@ -18,4 +18,6 @@ You will also need an install of nasm, I use version 2.14.
 And to run the thing, an install of qemu is needed too.
 
 Edit make.conf and ensure everything looks correct, then do "make all & make run-qemu" and you should see something like this:
+
+
 ![](demo.gif)
