@@ -57,8 +57,7 @@ void init0_main() {
 
 	char* s="This is a string written to the FD\n";
 	sys_write(fd,s,__builtin_strlen(s));
-	for(;;);
-/*
+
 
 	print_str("Type something> ");
 	char* line = readline(fd,buf);
@@ -68,14 +67,14 @@ void init0_main() {
 
        	char* test_str="This is a message sent from parent to child\n";
 	sys_write_ringbuf(fork_ret,test_str,__builtin_strlen(test_str));
-*/
+
 	print_str("Testing normal file reading:\n");
 	fd = sys_open("/test.txt");
 	print_str("Opened /test.txt with fd: "); sys_debug_out_num(fd); print_str("\n");
 
 	uint32_t len=sys_read(fd,buf,35);
 	print_str("Contents of /test.txt: "); print_str(buf);
-/*	
+	
 	print_str("Testing exit\n");
 	fork_ret = sys_fork();
 	if(fork_ret==0) {
@@ -100,7 +99,7 @@ void init0_main() {
 		print_str("Waiting on child...\n");
 		sys_wait_tid(fork_ret);
 		print_str("Back in the parent!\n");
-	}*/
+	}
 
 }
 

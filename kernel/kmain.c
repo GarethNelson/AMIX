@@ -359,7 +359,7 @@ char *str = NULL;
 	vfs_mknod(ino,&name[i+1], it_file, mode, 0, 0, makedev(0,0));
 	vfs_close(ino);
 	ino = vfs_open(name, &dummy_access);
-	vfs_write(ino, 0, data, len);
+//	vfs_write(ino, 0, data, len);
 	vfs_close(ino);
 }
 
